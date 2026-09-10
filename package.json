@@ -5,6 +5,11 @@
     "apps/*",
     "packages/*"
   ],
+  "allowScripts": {
+    "esbuild": true,
+    "@firebase/util": true,
+    "protobufjs": true
+  },
   "scripts": {
     "dev": "npm run dev --workspace=apps/web",
     "build": "npm run build --workspace=apps/web",
