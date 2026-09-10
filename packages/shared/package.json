@@ -1,0 +1,7 @@
+{
+  "name": "@rivalr/shared",
+  "private": true,
+  "version": "0.0.1",
+  "main": "./src/types.ts",
+  "types": "./src/types.ts"
+}

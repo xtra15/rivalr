@@ -1,0 +1,7 @@
+spm-arena-opencode-prompt.md
+node_modules
+dist
+.env
+.env.local
+.vite
+*.tsbuildinfo

@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-navy-900 text-white;
+  }
+
+  * {
+    @apply border-navy-700;
+  }
+}
+
+@layer components {
+  .skeleton {
+    @apply animate-pulse bg-navy-700 rounded;
+  }
+}
