@@ -3,9 +3,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { firestore } from "@/lib/firestore";
 import { fetchQuestions } from "@/lib/api";
-import { Card, Button } from "@/components/ui";
+import { Card, Button, Icon, LoadingScreen } from "@/components/ui";
 import { CHAPTERS, SUBJECTS, DIFFICULTIES } from "@rivalr/shared";
 import type { Subject, Difficulty } from "@rivalr/shared";
+
+const STEP_LABELS = ["Form", "Subject", "Chapter", "Difficulty", "Questions"] as const;
 
 export default function QuizLobby() {
   const { guildId } = useParams<{ guildId: string }>();
@@ -19,17 +21,10 @@ export default function QuizLobby() {
   const [difficulty, setDifficulty] = useState<Difficulty>("Easy");
   const [count, setCount] = useState(10);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const chapters = CHAPTERS[subject][form];
   const selectedChapter = chapters.find((c) => c.number === chapterNum);
-
-  const steps = [
-    { label: "Form", options: [4, 5] },
-    { label: "Subject", options: SUBJECTS },
-    { label: "Chapter", options: chapters },
-    { label: "Difficulty", options: DIFFICULTIES },
-    { label: "Questions", options: [5, 10, 20] },
-  ];
 
   function selectStep(value: unknown) {
     switch (step) {
@@ -45,6 +40,7 @@ export default function QuizLobby() {
   async function startQuiz() {
     if (!guildId || !user || !selectedChapter) return;
     setLoading(true);
+    setError(null);
 
     try {
       const data = await fetchQuestions({
@@ -77,6 +73,7 @@ export default function QuizLobby() {
       }
     } catch (e) {
       console.error(e);
+      setError("Could not generate questions right now. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -89,81 +86,92 @@ export default function QuizLobby() {
     return String(opt);
   };
 
-  return (
-    <div className="mx-auto max-w-lg px-4 py-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">New Quiz</h1>
-        <p className="mt-1 text-sm text-navy-400">
-          Step {step + 1} of 5 — {steps[step]?.label}
-        </p>
-      </div>
+  const options = step === 0 ? [4, 5] : step === 1 ? SUBJECTS : step === 2 ? chapters : step === 3 ? DIFFICULTIES : [5, 10, 20];
 
-      <div className="mb-6 flex gap-1">
-        {steps.map((s, i) => (
-          <div
-            key={s.label}
-            className={`h-1 flex-1 rounded-full transition-colors ${
-              i <= step ? "bg-indigo-500" : "bg-navy-700"
-            }`}
-          />
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-xl px-4 py-8">
+        <LoadingScreen label="Generating questions…" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-xl animate-fade-in">
+      <button
+        onClick={() => navigate(`/guild/${guildId}`)}
+        className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-navy-400 transition-colors hover:text-navy-100"
+      >
+        <Icon name="arrow-left" size={16} />
+        Back to guild
+      </button>
+
+      <h1 className="text-3xl font-bold tracking-tight">New Quiz</h1>
+
+      <div className="mt-6 grid grid-cols-5 gap-2">
+        {STEP_LABELS.map((label, i) => (
+          <div key={label} className="flex flex-col gap-1.5">
+            <div className={`h-1 rounded-full ${i <= step ? "bg-indigo-500" : "bg-navy-800"}`} aria-hidden="true" />
+            <span className={`text-[11px] font-medium uppercase tracking-wide ${i === step ? "text-indigo-300" : "text-navy-500"}`}>
+              {label}
+            </span>
+          </div>
         ))}
       </div>
 
-      {step < 4 ? (
-        <div className="space-y-2 animate-fade-in">
-          {(steps[step]?.options ?? []).map((opt, i) => (
-            <Card
-              key={i}
-              hover
-              className="p-4 text-center"
-              onClick={() => selectStep(opt)}
-            >
-              <span className="font-medium">{optionLabel(opt)}</span>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <div className="space-y-2 animate-fade-in">
-          {[5, 10, 20].map((n) => (
-            <Card
-              key={n}
-              hover
-              className="p-4 text-center"
-              onClick={() => selectStep(n)}
-            >
-              <span className="font-medium">{n} questions</span>
-            </Card>
-          ))}
-        </div>
-      )}
+      <p className="mb-4 mt-4 text-sm text-navy-400">
+        Step {step + 1} of 5 — {STEP_LABELS[step]}
+      </p>
+
+      <div className="grid gap-2.5">
+        {options.map((opt, i) => (
+          <button
+            key={i}
+            onClick={() => selectStep(opt)}
+            className="surface-card group flex items-center justify-between p-4 text-left transition-all duration-150 hover:border-navy-700 hover:bg-navy-800 active:scale-[0.995]"
+          >
+            <span className="text-[15px] font-medium text-navy-100">{optionLabel(opt)}</span>
+            <Icon
+              name="chevron-right"
+              size={18}
+              className="text-navy-600 transition-all group-hover:translate-x-0.5 group-hover:text-navy-300"
+            />
+          </button>
+        ))}
+      </div>
 
       {step === 4 && selectedChapter && (
         <div className="mt-6">
-          <Card className="mb-4 p-4 text-center">
-            <p className="text-sm text-navy-400">Ready to start</p>
-            <p className="mt-1 font-semibold">
-              Form {form} {subject}
-            </p>
-            <p className="text-sm text-navy-300">
-              Ch. {chapterNum}: {selectedChapter.name}
-            </p>
-            <p className="text-sm text-navy-300">
-              {difficulty} · {count} questions
-            </p>
+          <Card className="mb-4 flex items-start justify-between gap-4 p-5">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wider text-navy-500">
+                Ready to Start
+              </p>
+              <p className="mt-1.5 font-semibold">
+                Form {form} {subject}
+              </p>
+              <p className="mt-0.5 text-sm text-navy-300">
+                Ch. {chapterNum}: {selectedChapter.name}
+              </p>
+            </div>
+            <span className="shrink-0 text-right">
+              <p className="text-sm font-medium text-navy-200">{difficulty}</p>
+              <p className="text-sm text-navy-300">{count} questions</p>
+            </span>
           </Card>
-          <Button className="w-full" size="lg" onClick={startQuiz} disabled={loading}>
-            {loading ? "Loading questions..." : "Start Quiz"}
+
+          {error ? (
+            <p className="mb-4 flex items-center gap-2 text-sm text-signal-danger animate-slide-down">
+              <Icon name="info" size={16} />
+              {error}
+            </p>
+          ) : null}
+
+          <Button className="w-full" size="lg" onClick={startQuiz}>
+            <Icon name="play" size={18} fill />
+            Start Quiz
           </Button>
         </div>
-      )}
-
-      {step > 0 && (
-        <button
-          onClick={() => setStep(step - 1)}
-          className="mt-4 text-sm text-navy-400 hover:text-navy-200 transition-colors"
-        >
-          ← Back
-        </button>
       )}
     </div>
   );

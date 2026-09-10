@@ -1,0 +1,74 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Private per-user collections: owner only
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.google_id == request.auth.uid;
+      allow update: if isOwner(resource.data.google_id);
+      allow delete: if false;
+    }
+
+    match /guilds/{guildId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if false;
+    }
+
+    match /guild_members/{memberId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if false;
+    }
+
+    match /quiz_attempts/{attemptId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource.data.user_id == request.auth.uid;
+      allow delete: if false;
+    }
+
+    match /user_achievements/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if false;
+    }
+
+    match /user_subject_stats/{id} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && resource.data.user_id == request.auth.uid;
+      allow delete: if false;
+    }
+
+    match /user_chapter_stats/{id} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && resource.data.user_id == request.auth.uid;
+      allow delete: if false;
+    }
+
+    match /user_inventory/{id} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn();
+      allow delete: if false;
+    }
+
+    match /achievements/{id} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if false;
+    }
+
+    match /shop_items/{id} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if false;
+    }
+  }
+}

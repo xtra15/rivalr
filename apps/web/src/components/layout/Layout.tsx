@@ -1,7 +1,8 @@
 import { Outlet, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
-import { Navbar } from "./Navbar";
+import { Navbar, MobileTabBar } from "./Navbar";
+import { LoadingScreen } from "@/components/ui";
 
 export function Layout() {
   const { user, loading } = useAuth();
@@ -12,19 +13,16 @@ export function Layout() {
   }, [loading, user, navigate]);
 
   if (loading || !user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-navy-900">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-navy-600 border-t-indigo-500" />
-      </div>
-    );
+    return <LoadingScreen label="Loading rivalr…" />;
   }
 
   return (
-    <div className="min-h-screen bg-navy-900">
+    <div className="flex min-h-screen flex-col bg-navy-900">
       <Navbar />
-      <main>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-24 pt-8 sm:px-6 md:pb-12">
         <Outlet />
       </main>
+      <MobileTabBar />
     </div>
   );
 }

@@ -1,14 +1,21 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { firestore } from "@/lib/firestore";
-import { Card, Avatar, StatCard, ProgressBar } from "@/components/ui";
+import { Card, Avatar, StatCard, ProgressBar, EmptyState, Icon, achievementIcon } from "@/components/ui";
 import { getLevel, formatAccuracy } from "@/utils/format";
 import type { UserSubjectStats, UserAchievement } from "@rivalr/shared";
+
+interface EnrichedAchievement {
+  user_id: string;
+  achievement_id: string;
+  unlocked_at: string;
+  achievement: { id: string; icon: string; name: string; description?: string };
+}
 
 export default function Profile() {
   const { user } = useAuth();
   const [subjectStats, setSubjectStats] = useState<UserSubjectStats[]>([]);
-  const [achievements, setAchievements] = useState<(UserAchievement & { achievement: { id: string; icon: string; name: string } })[]>([]);
+  const [achievements, setAchievements] = useState<EnrichedAchievement[]>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -26,6 +33,7 @@ export default function Profile() {
       id: string;
       icon: string;
       name: string;
+      description?: string;
     }[];
 
     const enriched = achs.map((a) => {
@@ -34,12 +42,13 @@ export default function Profile() {
         ...a,
         achievement: {
           id: ach?.id ?? "",
-          icon: ach?.icon ?? "🏅",
+          icon: ach?.icon ?? "medal",
           name: ach?.name ?? "Achievement",
+          description: ach?.description,
         },
       };
     });
-    setAchievements(enriched as (UserAchievement & { achievement: { id: string; icon: string; name: string } })[]);
+    setAchievements(enriched);
   }
 
   if (!user) return null;
@@ -50,77 +59,85 @@ export default function Profile() {
   const totalQuestions = subjectStats.reduce((s, st) => s + st.total_questions, 0);
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8 animate-fade-in">
-      <div className="flex items-center gap-4 mb-8">
-        <Avatar src={user.avatar_url} name={user.name} size="lg" />
-        <div>
-          <h1 className="text-2xl font-bold">{user.name}</h1>
+    <div className="mx-auto max-w-2xl animate-fade-in">
+      <div className="mb-8 flex items-center gap-5">
+        <Avatar src={user.avatar_url} name={user.name} size="xl" />
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold tracking-tight">{user.name}</h1>
           <p className="text-sm text-navy-400">{user.email}</p>
         </div>
       </div>
 
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-navy-400">Level {level.level}</span>
-          <span className="text-xs text-navy-500">
+      <div className="mb-7">
+        <div className="mb-2 flex items-baseline justify-between">
+          <span className="text-sm font-semibold">Level {level.level}</span>
+          <span className="text-xs tabular-nums text-navy-500">
             {level.currentXP}/{level.nextLevelXP} XP
           </span>
         </div>
         <ProgressBar value={level.currentXP} max={level.nextLevelXP} />
       </div>
 
-      <div className="grid grid-cols-2 gap-3 mb-8">
-        <StatCard label="Total Quizzes" value={totalQuizzes} />
-        <StatCard label="Accuracy" value={formatAccuracy(totalCorrect, totalQuestions)} />
-        <StatCard label="Total XP" value={user.xp} />
-        <StatCard label="Coins" value={user.coins} />
+      <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <StatCard label="Quizzes" value={totalQuizzes} icon="book" />
+        <StatCard label="Accuracy" value={formatAccuracy(totalCorrect, totalQuestions)} icon="target" tint="accent" />
+        <StatCard label="Total XP" value={user.xp} icon="zap" tint="warning" />
+        <StatCard label="Coins" value={user.coins} icon="coin" tint="success" />
       </div>
 
-      <h2 className="font-semibold mb-3">Subject Breakdown</h2>
-      <div className="space-y-2 mb-8">
+      <h2 className="mb-3 text-base font-semibold">Subject Breakdown</h2>
+      <div className="mb-8 space-y-2.5">
         {subjectStats.length === 0 ? (
-          <Card className="text-center py-6 text-navy-400 text-sm">
-            No quiz data yet
-          </Card>
+          <Card className="py-8 text-center text-sm text-navy-400">No quiz data yet</Card>
         ) : (
-          subjectStats.map((s) => (
-            <Card key={s.subject} className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-sm">{s.subject}</p>
-                  <p className="text-xs text-navy-400">
-                    {s.quizzes_completed} quizzes · Best streak: {s.best_streak}
-                  </p>
+          subjectStats.map((s) => {
+            const accuracy = formatAccuracy(s.correct_answers, s.total_questions);
+            return (
+              <Card key={s.subject} className="p-5">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">{s.subject}</p>
+                    <p className="text-xs text-navy-500">
+                      {s.quizzes_completed} quizzes · Best streak {s.best_streak}
+                    </p>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <p className="text-sm font-semibold tabular-nums text-indigo-300">
+                      {s.xp_earned}
+                      <span className="ml-1 text-xs font-medium text-navy-500">XP</span>
+                    </p>
+                    <p className="text-xs tabular-nums text-navy-400">{accuracy}</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold text-indigo-400">{s.xp_earned} XP</p>
-                  <p className="text-xs text-navy-400">
-                    {formatAccuracy(s.correct_answers, s.total_questions)}
-                  </p>
-                </div>
-              </div>
-            </Card>
-          ))
+                <ProgressBar value={s.correct_answers} max={Math.max(1, s.total_questions)} color="bg-signal-success" />
+              </Card>
+            );
+          })
         )}
       </div>
 
-      <h2 className="font-semibold mb-3">Achievements</h2>
+      <h2 className="mb-3 text-base font-semibold">Achievements</h2>
       {achievements.length === 0 ? (
-        <Card className="text-center py-6 text-navy-400 text-sm">
-          No achievements yet
-        </Card>
+        <EmptyState
+          icon="medal"
+          title="No achievements yet"
+          description="Finish quizzes to unlock your first achievement."
+        />
       ) : (
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2.5">
           {achievements.map((a) => (
-            <Card key={a.achievement_id} className="p-3">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">{a.achievement.icon}</span>
-                <div>
-                  <p className="text-sm font-medium">{a.achievement.name}</p>
-                  <p className="text-xs text-navy-400">
-                    {new Date(a.unlocked_at).toLocaleDateString()}
-                  </p>
-                </div>
+            <Card key={a.achievement_id} className="flex items-center gap-3 p-3.5">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-indigo-500/15 text-indigo-300 ring-1 ring-inset ring-white/5">
+                <Icon name={achievementIcon(a.achievement.name)} size={21} />
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{a.achievement.name}</p>
+                {a.achievement.description ? (
+                  <p className="truncate text-xs text-navy-400">{a.achievement.description}</p>
+                ) : null}
+                <p className="text-[11px] text-navy-500">
+                  {new Date(a.unlocked_at).toLocaleDateString()}
+                </p>
               </div>
             </Card>
           ))}

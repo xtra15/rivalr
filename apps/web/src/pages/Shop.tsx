@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { firestore } from "@/lib/firestore";
-import { Card, Button, Badge } from "@/components/ui";
+import { Card, Button, Badge, Icon, PageHeader, type IconName } from "@/components/ui";
 import type { ShopItem } from "@rivalr/shared";
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -9,6 +9,13 @@ const CATEGORY_LABELS: Record<string, string> = {
   sound_effect: "Sound Effects",
   quiz_theme: "Quiz Themes",
   taunt: "Taunt Stickers",
+};
+
+const CATEGORY_ICONS: Record<string, IconName> = {
+  avatar_frame: "user",
+  sound_effect: "sparkles",
+  quiz_theme: "target",
+  taunt: "crown",
 };
 
 export default function Shop() {
@@ -83,25 +90,40 @@ export default function Shop() {
   const categories = [...new Set(items.map((i) => i.category))];
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8 animate-fade-in">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Shop</h1>
-        <Badge variant="info" className="text-sm px-3 py-1">
-          💰 {user?.coins ?? 0} coins
-        </Badge>
-      </div>
+    <div className="mx-auto max-w-3xl animate-fade-in">
+      <PageHeader
+        title="Shop"
+        subtitle="Spend your coins on customization"
+        actions={
+          <Badge variant="info" className="px-3.5 py-1.5 text-sm font-semibold tabular-nums">
+            <Icon name="coin" size={16} />
+            {user?.coins ?? 0}
+          </Badge>
+        }
+      />
 
       {loading ? (
-        <div className="space-y-4">
+        <div className="space-y-8">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="skeleton h-32 rounded-xl" />
+            <div key={i} className="space-y-3">
+              <div className="skeleton h-5 w-32" />
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="skeleton h-32" />
+                <div className="skeleton h-32" />
+              </div>
+            </div>
           ))}
         </div>
       ) : (
         categories.map((cat) => (
-          <div key={cat} className="mb-8">
-            <h2 className="font-semibold mb-3">{CATEGORY_LABELS[cat] ?? cat}</h2>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <section key={cat} className="mb-9">
+            <div className="mb-3 flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-navy-800 text-indigo-300">
+                <Icon name={CATEGORY_ICONS[cat] ?? "bag"} size={16} />
+              </div>
+              <h2 className="text-base font-semibold">{CATEGORY_LABELS[cat] ?? cat}</h2>
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {items
                 .filter((i) => i.category === cat)
                 .map((item) => {
@@ -110,45 +132,59 @@ export default function Shop() {
                   const canAfford = (user?.coins ?? 0) >= item.coin_cost;
 
                   return (
-                    <Card key={item.id} className="p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
+                    <Card key={item.id} className="flex flex-col p-5">
+                      <div className="mb-1 flex items-start justify-between gap-3">
+                        <div className="min-w-0">
                           <p className="font-medium text-sm">{item.name}</p>
-                          <p className="text-xs text-navy-400 mt-0.5">{item.description}</p>
-                          <div className="mt-2 text-xs text-navy-500">
-                            {item.preview_data}
-                          </div>
+                          <p className="mt-0.5 text-xs leading-relaxed text-navy-400">{item.description}</p>
                         </div>
-                        <span className="text-lg ml-2">
-                          {item.category === "taunt" ? item.preview_data : ""}
-                        </span>
+                        {cat === "taunt" && item.preview_data ? (
+                          <span className="shrink-0 text-2xl leading-none">{item.preview_data}</span>
+                        ) : null}
                       </div>
-                      <div className="mt-3 flex items-center gap-2">
+
+                      {isEquipped ? (
+                        <div className="mt-3">
+                          <Badge variant="success">
+                            <Icon name="check" size={13} />
+                            Equipped
+                          </Badge>
+                        </div>
+                      ) : null}
+
+                      <div className="mt-auto flex items-center gap-2 pt-4">
                         {owned ? (
-                          <>
-                            <Button
-                              size="sm"
-                              variant={isEquipped ? "primary" : "secondary"}
-                              onClick={() => equipItem(item)}
-                            >
-                              {isEquipped ? "Equipped" : "Equip"}
-                            </Button>
-                          </>
+                          <Button size="sm" variant={isEquipped ? "secondary" : "primary"} onClick={() => equipItem(item)}>
+                            {isEquipped ? "Unequip" : "Equip"}
+                          </Button>
                         ) : (
                           <Button
                             size="sm"
                             disabled={!canAfford || buying === item.id}
                             onClick={() => buyItem(item)}
                           >
-                            {buying === item.id ? "..." : `Buy · ${item.coin_cost} 💰`}
+                            {buying === item.id ? (
+                              "Buying…"
+                            ) : (
+                              <>
+                                Buy
+                                <span className="inline-flex items-center gap-1 tabular-nums">
+                                  <Icon name="coin" size={15} />
+                                  {item.coin_cost}
+                                </span>
+                              </>
+                            )}
                           </Button>
                         )}
+                        {!owned && !canAfford ? (
+                          <span className="text-xs text-navy-500">Not enough coins</span>
+                        ) : null}
                       </div>
                     </Card>
                   );
                 })}
             </div>
-          </div>
+          </section>
         ))
       )}
     </div>

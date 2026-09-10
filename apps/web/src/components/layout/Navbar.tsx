@@ -1,13 +1,14 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
-import { Avatar } from "@/components/ui/Avatar";
+import { Avatar, Icon, LogoMark, type IconName } from "@/components/ui";
 
-
-const navItems = [
-  { to: "/dashboard", label: "Dashboard" },
-  { to: "/shop", label: "Shop" },
-  { to: "/profile", label: "Profile" },
+const navItems: { to: string; label: string; icon: IconName }[] = [
+  { to: "/dashboard", label: "Dashboard", icon: "grid" },
+  { to: "/shop", label: "Shop", icon: "bag" },
+  { to: "/profile", label: "Profile", icon: "user" },
 ];
+
+const TAB_ROUTES = new Set(["/dashboard", "/shop", "/profile"]);
 
 export function Navbar() {
   const { user, signOut } = useAuth();
@@ -16,38 +17,86 @@ export function Navbar() {
   if (!user) return null;
 
   return (
-    <nav className="sticky top-0 z-40 border-b border-navy-700 bg-navy-900/95 backdrop-blur-sm">
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4">
-        <Link to="/dashboard" className="flex items-center gap-2 font-bold text-lg">
-          <span className="text-indigo-500">⚡</span>
-          <span>rivalr</span>
+    <nav className="sticky top-0 z-40 border-b border-navy-800 bg-navy-900/80 backdrop-blur-xl">
+      <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4 sm:px-6">
+        <Link to="/dashboard" className="flex items-center gap-2.5">
+          <LogoMark size={30} />
+          <span className="text-lg font-bold tracking-tight">rivalr</span>
         </Link>
 
-        <div className="hidden items-center gap-1 md:flex">
+        <div className="mx-auto hidden items-center gap-1 md:flex">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
-              className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors
-                ${location.pathname === item.to
-                  ? "text-white bg-navy-800"
-                  : "text-navy-400 hover:text-navy-200 hover:bg-navy-800/50"
-                }`}
+              end={item.to === "/dashboard"}
+              className={({ isActive }) =>
+                `flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-medium transition-colors ${
+                  isActive || (item.to !== "/dashboard" && location.pathname.startsWith(item.to))
+                    ? "bg-navy-800 text-white"
+                    : "text-navy-400 hover:bg-navy-800/70 hover:text-navy-100"
+                }`
+              }
             >
+              <Icon name={item.icon} size={17} />
               {item.label}
             </NavLink>
           ))}
         </div>
 
-        <div className="ml-auto flex items-center gap-3">
-          <button onClick={signOut} className="text-sm text-navy-400 hover:text-navy-200 transition-colors">
-            Sign out
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            onClick={signOut}
+            title="Sign out"
+            aria-label="Sign out"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-navy-400 transition-colors hover:bg-navy-800 hover:text-navy-100"
+          >
+            <Icon name="logout" size={18} />
           </button>
-          <Link to="/profile">
+          <Link to="/profile" title="Your profile" className="shrink-0">
             <Avatar src={user.avatar_url} name={user.name} size="sm" />
           </Link>
         </div>
       </div>
     </nav>
   );
+}
+
+export function MobileTabBar() {
+  const { user } = useAuth();
+  const location = useLocation();
+
+  if (!user) return null;
+  if (!TAB_ROUTES.has(location.pathname)) return null;
+
+  return (
+    <nav
+      aria-label="Primary"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-navy-800 bg-navy-850/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"
+    >
+      <div className="mx-auto grid max-w-md grid-cols-3">
+        {navItems.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.to === "/dashboard"}
+            className={({ isActive }) =>
+              `flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors ${
+                isActive || (item.to !== "/dashboard" && location.pathname.startsWith(item.to))
+                  ? "text-indigo-400"
+                  : "text-navy-400"
+              }`
+            }
+          >
+            <Icon name={item.icon} size={22} strokeWidth={isActiveOrPath(location.pathname, item.to) ? 2.25 : 1.75} />
+            {item.label}
+          </NavLink>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+function isActiveOrPath(pathname: string, to: string) {
+  return pathname === to || (to !== "/dashboard" && pathname.startsWith(to));
 }
