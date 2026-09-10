@@ -1,6 +1,6 @@
 {
   "installCommand": "npm install",
-  "buildCommand": "node -v && npm run build > /tmp/build.log 2>&1; status=$?; cat /tmp/build.log; echo \"EXIT_STATUS=$status\"; exit $status",
+  "buildCommand": "npm run build",
   "outputDirectory": "apps/web/dist",
   "framework": null,
   "rewrites": [

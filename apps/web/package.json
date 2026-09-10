@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@rivalr/shared": "*",
     "firebase": "^11.1.0",
     "canvas-confetti": "^1.9.3",
     "react": "^19.0.0",
