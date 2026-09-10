@@ -1,4 +1,5 @@
 export interface Env {
   QUESTIONS_KV: KVNamespace;
-  ANTHROPIC_API_KEY: string;
+  GEMINI_API_KEY: string;
+  GROQ_API_KEY: string;
 }

@@ -5,18 +5,15 @@ export interface Question {
   explanation: string;
 }
 
-export async function generateQuestions(
-  apiKey: string,
-  params: {
-    subject: string;
-    form: number;
-    chapter_number: number;
-    chapter_name: string;
-    difficulty: string;
-    count: number;
-  },
-): Promise<Question[]> {
-  const prompt = `You are an expert SPM (Sijil Pelajaran Malaysia) examiner for ${params.subject}.
+export function buildPrompt(params: {
+  subject: string;
+  form: number;
+  chapter_number: number;
+  chapter_name: string;
+  difficulty: string;
+  count: number;
+}): string {
+  return `You are an expert SPM (Sijil Pelajaran Malaysia) examiner for ${params.subject}.
 Generate ${params.count} multiple choice questions for Form ${params.form}, Chapter ${params.chapter_number}: ${params.chapter_name}, at difficulty level "${params.difficulty}".
 
 Difficulty definitions:
@@ -43,27 +40,15 @@ Format:
     "explanation": "Brief explanation."
   }
 ]`;
+}
 
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-6",
-      max_tokens: 4096,
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
-
-  if (!res.ok) throw new Error(`Claude API error: ${res.status}`);
-  const data = (await res.json()) as { content: { type: string; text: string }[] };
-  const text = data.content[0]?.text ?? "[]";
-
+export function parseQuestions(text: string): Question[] {
   const jsonMatch = text.match(/\[[\s\S]*\]/);
-  if (!jsonMatch) throw new Error("No JSON array found in Claude response");
+  if (!jsonMatch) throw new Error("No JSON array found in model response");
 
-  return JSON.parse(jsonMatch[0]) as Question[];
+  const questions = JSON.parse(jsonMatch[0]) as Question[];
+  if (!Array.isArray(questions) || questions.length === 0) {
+    throw new Error("Model returned an empty or invalid question list");
+  }
+  return questions;
 }

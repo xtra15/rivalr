@@ -1,4 +1,6 @@
-import { generateQuestions } from "../lib/claude";
+import { generateWithGemini } from "../lib/gemini";
+import { generateWithGroq } from "../lib/groq";
+import type { Question } from "../lib/questions";
 import { decompress, compress } from "../lib/compress";
 import type { Env } from "../types";
 
@@ -9,6 +11,33 @@ interface QuestionRequest {
   chapter_name: string;
   difficulty: string;
   count: number;
+}
+
+interface QuestionParams {
+  form: number;
+  subject: string;
+  chapter_number: number;
+  chapter_name: string;
+  difficulty: string;
+  count: number;
+}
+
+async function generateWithFallback(env: Env, params: QuestionParams): Promise<{ questions: Question[]; provider: string }> {
+  const errors: string[] = [];
+
+  try {
+    return { questions: await generateWithGemini(env.GEMINI_API_KEY, params), provider: "gemini" };
+  } catch (err) {
+    errors.push(`gemini: ${err instanceof Error ? err.message : String(err)}`);
+  }
+
+  try {
+    return { questions: await generateWithGroq(env.GROQ_API_KEY, params), provider: "groq" };
+  } catch (err) {
+    errors.push(`groq: ${err instanceof Error ? err.message : String(err)}`);
+  }
+
+  throw new Error(`All providers failed: ${errors.join(" | ")}`);
 }
 
 export async function handleQuestions(request: Request, env: Env): Promise<Response> {
@@ -30,7 +59,7 @@ export async function handleQuestions(request: Request, env: Env): Promise<Respo
     return Response.json({ questions: decompress(cached), cached: true });
   }
 
-  const questions = await generateQuestions(env.ANTHROPIC_API_KEY, {
+  const { questions, provider } = await generateWithFallback(env, {
     form,
     subject,
     chapter_number,
