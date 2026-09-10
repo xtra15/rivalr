@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
-import { supabase } from "@/lib/supabase";
+import { firestore } from "@/lib/firestore";
 import { Card, Button, Badge } from "@/components/ui";
-import type { ShopItem, UserInventory } from "@rivalr/shared";
+import type { ShopItem } from "@rivalr/shared";
 
 const CATEGORY_LABELS: Record<string, string> = {
   avatar_frame: "Avatar Frames",
@@ -12,7 +12,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 export default function Shop() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [items, setItems] = useState<ShopItem[]>([]);
   const [inventory, setInventory] = useState<string[]>([]);
   const [equipped, setEquipped] = useState<Record<string, string>>({});
@@ -27,20 +27,21 @@ export default function Shop() {
   async function loadShop() {
     if (!user) return;
 
-    const { data: shopItems } = await supabase.from("shop_items").select("*");
-    setItems((shopItems ?? []) as ShopItem[]);
+    const shopItems = (await firestore.shopItems.getAll()) as unknown as ShopItem[];
+    setItems(shopItems);
 
-    const { data: inv } = await supabase
-      .from("user_inventory")
-      .select("*")
-      .eq("user_id", user.id);
-    const invData = (inv ?? []) as UserInventory[];
-    setInventory(invData.map((i) => i.item_id));
+    const inv = (await firestore.userInventory.get(user.id)) as unknown as {
+      id: string;
+      item_id: string;
+      is_equipped: boolean;
+    }[];
+    setInventory(inv.map((i) => i.item_id));
 
     const eq: Record<string, string> = {};
-    for (const i of invData) {
-      if (i.is_equipped && i.item) {
-        eq[i.item.category] = i.item_id;
+    for (const i of inv) {
+      if (i.is_equipped) {
+        const item = shopItems.find((s) => s.id === i.item_id);
+        if (item) eq[item.category] = i.item_id;
       }
     }
     setEquipped(eq);
@@ -54,18 +55,12 @@ export default function Shop() {
 
     setBuying(item.id);
 
-    await supabase.from("user_inventory").insert({
-      user_id: user.id,
-      item_id: item.id,
-    });
-
-    await supabase
-      .from("users")
-      .update({ coins: (user.coins ?? 0) - item.coin_cost })
-      .eq("id", user.id);
+    await firestore.userInventory.add(user.id, item.id);
+    await firestore.users.updateCoins(user.id, -item.coin_cost);
 
     setInventory([...inventory, item.id]);
     setBuying(null);
+    await refreshUser();
   }
 
   async function equipItem(item: ShopItem) {
@@ -73,27 +68,14 @@ export default function Shop() {
     const isCurrentlyEquipped = equipped[item.category] === item.id;
 
     if (isCurrentlyEquipped) {
-      await supabase
-        .from("user_inventory")
-        .update({ is_equipped: false })
-        .eq("user_id", user.id)
-        .eq("item_id", item.id);
+      await firestore.userInventory.unequip(user.id, item.id);
       setEquipped((prev) => {
         const next = { ...prev };
         delete next[item.category];
         return next;
       });
     } else {
-      await supabase
-        .from("user_inventory")
-        .update({ is_equipped: false })
-        .eq("user_id", user.id)
-        .eq("item_id", equipped[item.category] ?? "");
-      await supabase
-        .from("user_inventory")
-        .update({ is_equipped: true })
-        .eq("user_id", user.id)
-        .eq("item_id", item.id);
+      await firestore.userInventory.equip(user.id, item.id, equipped[item.category]);
       setEquipped((prev) => ({ ...prev, [item.category]: item.id }));
     }
   }

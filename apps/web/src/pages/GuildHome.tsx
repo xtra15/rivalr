@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
-import { supabase } from "@/lib/supabase";
+import { firestore } from "@/lib/firestore";
 import { Card, Avatar, Badge, Tabs, StatCard } from "@/components/ui";
 import { Button } from "@/components/ui/Button";
 import { formatAccuracy, formatTime, DIFFICULTY_COLORS } from "@/utils/format";
@@ -25,32 +25,22 @@ export default function GuildHome() {
   async function loadGuild() {
     if (!guildId) return;
 
-    const { data: g } = await supabase.from("guilds").select("*").eq("id", guildId).single();
-    setGuild(g);
+    const g = await firestore.guilds.get(guildId);
+    setGuild(g as Guild);
 
-    const { data: memberRows } = await supabase
-      .from("guild_members")
-      .select("user_id")
-      .eq("guild_id", guildId);
+    const memberRows = await firestore.guildMembers.getByGuild(guildId);
 
-    if (memberRows?.length) {
-      const userIds = memberRows.map((m) => m.user_id);
-      const { data: users } = await supabase.from("users").select("*").in("id", userIds);
-      setMembers((users ?? []) as User[]);
+    if (memberRows.length) {
+      const userIds = memberRows.map((m) => m.user_id as string);
+      const users = await firestore.usersBatch.getByIds(userIds);
+      setMembers(users as unknown as User[]);
     }
 
-    const { data: quizData } = await supabase
-      .from("quiz_attempts")
-      .select("*")
-      .eq("guild_id", guildId)
-      .order("completed_at", { ascending: false })
-      .limit(50);
-    setAttempts((quizData ?? []) as QuizAttempt[]);
+    const quizData = await firestore.quizAttempts.getByGuild(guildId);
+    setAttempts(quizData as unknown as QuizAttempt[]);
 
-    const { data: stats } = await supabase
-      .from("user_chapter_stats")
-      .select("*");
-    setChapterStats((stats ?? []) as UserChapterStats[]);
+    const stats = await firestore.userChapterStats.getAll();
+    setChapterStats(stats as unknown as UserChapterStats[]);
 
     setLoading(false);
   }

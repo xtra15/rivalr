@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { supabase } from "@/lib/supabase";
+import { firestore } from "@/lib/firestore";
 import { Card, StatCard, Button } from "@/components/ui";
 import { formatTime } from "@/utils/format";
 import type { QuizAttempt } from "@rivalr/shared";
@@ -12,15 +12,10 @@ export default function Results() {
 
   useEffect(() => {
     if (!quizId) return;
-    supabase
-      .from("quiz_attempts")
-      .select("*")
-      .eq("id", quizId)
-      .single()
-      .then(({ data }) => {
-        setAttempt(data as QuizAttempt);
-        setLoading(false);
-      });
+    firestore.quizAttempts.get(quizId).then((data) => {
+      setAttempt(data as unknown as QuizAttempt);
+      setLoading(false);
+    });
   }, [quizId]);
 
   if (loading || !attempt) {

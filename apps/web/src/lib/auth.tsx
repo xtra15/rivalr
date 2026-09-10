@@ -1,12 +1,28 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import type { User } from "@rivalr/shared";
-import { supabase } from "./supabase";
+import {
+  onAuthStateChanged,
+  signInWithPopup,
+  signOut as firebaseSignOut,
+} from "firebase/auth";
+import { auth, googleProvider } from "./firebase";
+import { firestore } from "./firestore";
+
+interface User {
+  id: string;
+  google_id: string;
+  email: string;
+  name: string;
+  avatar_url: string | null;
+  xp: number;
+  coins: number;
+}
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -16,55 +32,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        fetchUser(session.user.id);
-      } else {
-        setLoading(false);
-      }
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        fetchUser(session.user.id);
+    const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        let userData = await firestore.users.get(firebaseUser.uid);
+        if (!userData) {
+          userData = await firestore.users.create({
+            google_id: firebaseUser.uid,
+            email: firebaseUser.email ?? "",
+            name: firebaseUser.displayName ?? "User",
+            avatar_url: firebaseUser.photoURL,
+          });
+        }
+        setUser(userData as User);
       } else {
         setUser(null);
-        setLoading(false);
       }
+      setLoading(false);
     });
-
-    return () => subscription.unsubscribe();
+    return () => unsub();
   }, []);
 
-  async function fetchUser(authUserId: string) {
-    const { data } = await supabase
-      .from("users")
-      .select("*")
-      .eq("google_id", authUserId)
-      .single();
-
-    setUser(data as User);
-    setLoading(false);
-  }
-
   async function signInWithGoogle() {
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/dashboard`,
-      },
-    });
+    await signInWithPopup(auth, googleProvider);
   }
 
   async function signOut() {
-    await supabase.auth.signOut();
+    await firebaseSignOut(auth);
     setUser(null);
   }
 
+  async function refreshUser() {
+    if (!user) return;
+    const fresh = await firestore.users.get(user.google_id);
+    if (fresh) setUser(fresh as User);
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signOut, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

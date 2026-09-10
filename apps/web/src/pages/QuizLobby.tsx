@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
-import { supabase } from "@/lib/supabase";
+import { firestore } from "@/lib/firestore";
 import { fetchQuestions } from "@/lib/api";
 import { Card, Button } from "@/components/ui";
 import { CHAPTERS, SUBJECTS, DIFFICULTIES } from "@rivalr/shared";
@@ -56,25 +56,21 @@ export default function QuizLobby() {
         count,
       });
 
-      const { data: attempt } = await supabase
-        .from("quiz_attempts")
-        .insert({
-          user_id: user.id,
-          guild_id: guildId,
-          form,
-          subject,
-          chapter_number: chapterNum,
-          chapter_name: selectedChapter.name,
-          difficulty,
-          total_questions: count,
-          correct_answers: 0,
-          time_taken_seconds: 0,
-          xp_earned: 0,
-          coins_earned: 0,
-          questions_data: data.questions.map((q) => ({ ...q, user_answer: undefined })),
-        })
-        .select()
-        .single();
+      const attempt = await firestore.quizAttempts.create({
+        user_id: user.id,
+        guild_id: guildId,
+        form,
+        subject,
+        chapter_number: chapterNum,
+        chapter_name: selectedChapter.name,
+        difficulty,
+        total_questions: count,
+        correct_answers: 0,
+        time_taken_seconds: 0,
+        xp_earned: 0,
+        coins_earned: 0,
+        questions_data: data.questions.map((q) => ({ ...q, user_answer: undefined })),
+      });
 
       if (attempt) {
         navigate(`/guild/${guildId}/quiz/${attempt.id}`);

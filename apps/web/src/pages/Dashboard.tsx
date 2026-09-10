@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
-import { supabase } from "@/lib/supabase";
+import { firestore } from "@/lib/firestore";
 import { Card, StatCard } from "@/components/ui";
 import { Button } from "@/components/ui/Button";
 import type { Guild } from "@rivalr/shared";
@@ -23,25 +23,19 @@ export default function Dashboard() {
 
   async function fetchGuilds() {
     if (!user) return;
-    const { data: memberships } = await supabase
-      .from("guild_members")
-      .select("guild_id")
-      .eq("user_id", user.id);
+    const memberships = await firestore.guildMembers.getByUser(user.id);
 
-    if (!memberships?.length) {
+    if (!memberships.length) {
       setLoading(false);
       return;
     }
 
-    const guildIds = memberships.map((m) => m.guild_id);
-    const { data: guildData } = await supabase
-      .from("guilds")
-      .select("*")
-      .in("id", guildIds);
+    const guildIds = memberships.map((m) => m.guild_id as string);
+    const guildData = await firestore.guilds.getByIds(guildIds);
 
     setGuilds(
-      (guildData ?? []).map((g) => ({
-        ...g,
+      guildData.map((g) => ({
+        ...(g as unknown as Guild),
         member_count: 0,
       })),
     );
@@ -51,17 +45,14 @@ export default function Dashboard() {
   async function createGuild() {
     if (!user || !guildName.trim()) return;
     const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-    const { data: guild } = await supabase
-      .from("guilds")
-      .insert({ name: guildName.trim(), invite_code: code, created_by: user.id })
-      .select()
-      .single();
+    const guild = await firestore.guilds.create({
+      name: guildName.trim(),
+      invite_code: code,
+      created_by: user.id,
+    });
 
     if (guild) {
-      await supabase.from("guild_members").insert({
-        guild_id: guild.id,
-        user_id: user.id,
-      });
+      await firestore.guildMembers.add(guild.id, user.id);
       setShowCreate(false);
       navigate(`/guild/${guild.id}`);
     }
@@ -69,17 +60,10 @@ export default function Dashboard() {
 
   async function joinGuild() {
     if (!user || !inviteCode.trim()) return;
-    const { data: guild } = await supabase
-      .from("guilds")
-      .select("*")
-      .eq("invite_code", inviteCode.trim().toUpperCase())
-      .single();
+    const guild = await firestore.guilds.getByCode(inviteCode.trim().toUpperCase());
 
     if (guild) {
-      await supabase.from("guild_members").insert({
-        guild_id: guild.id,
-        user_id: user.id,
-      });
+      await firestore.guildMembers.add(guild.id, user.id);
       setShowJoin(false);
       navigate(`/guild/${guild.id}`);
     }

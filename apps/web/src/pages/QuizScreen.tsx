@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
-import { supabase } from "@/lib/supabase";
+import { firestore } from "@/lib/firestore";
 import { Button, ProgressBar, Card } from "@/components/ui";
 import { formatTime } from "@/utils/format";
 import type { QuizAttempt } from "@rivalr/shared";
@@ -35,12 +35,8 @@ export default function QuizScreen() {
 
   async function loadAttempt() {
     if (!quizId) return;
-    const { data } = await supabase
-      .from("quiz_attempts")
-      .select("*")
-      .eq("id", quizId)
-      .single();
-    setAttempt(data as QuizAttempt);
+    const data = await firestore.quizAttempts.get(quizId);
+    setAttempt(data as unknown as QuizAttempt);
     setLoading(false);
   }
 
@@ -89,26 +85,16 @@ export default function QuizScreen() {
     const baseXP = correct * 10 * (difficultyMultiplier[attempt.difficulty] ?? 1);
     const coins = Math.round(correct * (difficultyMultiplier[attempt.difficulty] ?? 1) / 5) * 5;
 
-    await supabase
-      .from("quiz_attempts")
-      .update({
-        correct_answers: correct,
-        time_taken_seconds: timeElapsed,
-        xp_earned: Math.round(baseXP),
-        coins_earned: coins,
-        questions_data: attempt.questions_data,
-      })
-      .eq("id", attempt.id);
+    await firestore.quizAttempts.update(attempt.id, {
+      correct_answers: correct,
+      time_taken_seconds: timeElapsed,
+      xp_earned: Math.round(baseXP),
+      coins_earned: coins,
+      questions_data: attempt.questions_data,
+    });
 
-    await supabase.rpc("increment_user_xp", {
-      uid: user.id,
-      amount: Math.round(baseXP),
-    }).then(() =>
-      supabase.rpc("increment_user_coins", {
-        uid: user.id,
-        amount: coins,
-      }),
-    );
+    await firestore.users.updateXP(user.id, Math.round(baseXP));
+    await firestore.users.updateCoins(user.id, coins);
 
     navigate(`/guild/${guildId}/quiz/${attempt.id}/results`);
   }

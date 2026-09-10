@@ -1,15 +1,14 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
-import { supabase } from "@/lib/supabase";
+import { firestore } from "@/lib/firestore";
 import { Card, Avatar, StatCard, ProgressBar } from "@/components/ui";
 import { getLevel, formatAccuracy } from "@/utils/format";
-import type { UserSubjectStats, UserAchievement, Achievement } from "@rivalr/shared";
+import type { UserSubjectStats, UserAchievement } from "@rivalr/shared";
 
 export default function Profile() {
   const { user } = useAuth();
   const [subjectStats, setSubjectStats] = useState<UserSubjectStats[]>([]);
-  const [achievements, setAchievements] = useState<(UserAchievement & { achievement: Achievement })[]>([]);
-
+  const [achievements, setAchievements] = useState<(UserAchievement & { achievement: { id: string; icon: string; name: string } })[]>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -19,18 +18,28 @@ export default function Profile() {
   async function loadData() {
     if (!user) return;
 
-    const { data: stats } = await supabase
-      .from("user_subject_stats")
-      .select("*")
-      .eq("user_id", user.id);
-    setSubjectStats((stats ?? []) as UserSubjectStats[]);
+    const stats = await firestore.userSubjectStats.get(user.id);
+    setSubjectStats(stats as unknown as UserSubjectStats[]);
 
-    const { data: achs } = await supabase
-      .from("user_achievements")
-      .select("*, achievement:achievements(*)")
-      .eq("user_id", user.id);
-    setAchievements((achs ?? []) as (UserAchievement & { achievement: Achievement })[]);
+    const achs = (await firestore.userAchievements.get(user.id)) as unknown as UserAchievement[];
+    const allAchievements = (await firestore.achievements.getAll()) as unknown as {
+      id: string;
+      icon: string;
+      name: string;
+    }[];
 
+    const enriched = achs.map((a) => {
+      const ach = allAchievements.find((x) => x.id === a.achievement_id);
+      return {
+        ...a,
+        achievement: {
+          id: ach?.id ?? "",
+          icon: ach?.icon ?? "🏅",
+          name: ach?.name ?? "Achievement",
+        },
+      };
+    });
+    setAchievements(enriched as (UserAchievement & { achievement: { id: string; icon: string; name: string } })[]);
   }
 
   if (!user) return null;

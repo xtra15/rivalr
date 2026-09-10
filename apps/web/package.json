@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.49.1",
+    "firebase": "^11.1.0",
     "canvas-confetti": "^1.9.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
