@@ -1,6 +1,6 @@
 {
   "installCommand": "npm install",
-  "buildCommand": "export NODE_OPTIONS=\"--max-old-space-size=4096\"; npm run build",
+  "buildCommand": "node -e \"console.log('platform:', process.platform, 'arch:', process.arch); const p=require('esbuild'); console.log('esbuild version:', p.version)\" && npx --no-install esbuild --version && npm run build",
   "outputDirectory": "apps/web/dist",
   "framework": null,
   "rewrites": [
