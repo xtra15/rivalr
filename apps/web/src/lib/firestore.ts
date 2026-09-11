@@ -13,6 +13,7 @@ import {
   type DocumentData,
 } from "firebase/firestore";
 import { db } from "./firebase";
+import type { PublicUser, CustomTaunt } from "@rivalr/shared";
 
 type FsWriteData = {
   [key: string]:
@@ -48,6 +49,13 @@ export const firestore = {
       const q = query(collection(db, "users"), where("google_id", "==", googleId));
       const snap = await getDocs(q);
       return snap.empty ? null : { id: snap.docs[0]!.id, ...toPlain(snap.docs[0]!.data()) };
+    },
+    async getPublic(userId: string) {
+      const snap = await getDoc(doc(db, "users", userId));
+      if (!snap.exists()) return null;
+      const data = snap.data() as Record<string, unknown>;
+      const { google_id, email, ...pub } = data;
+      return { id: snap.id, ...pub } as unknown as PublicUser;
     },
     async create(data: {
       google_id: string;
@@ -273,6 +281,36 @@ async getByIds(ids: string[]) {
     async unequip(userId: string, itemId: string) {
       const ref = doc(db, "user_inventory", `${userId}_${itemId}`);
       await updateDoc(ref, { is_equipped: false });
+    },
+    async getForUsers(userIds: string[]) {
+      const results: (Record<string, unknown> & { id: string })[] = [];
+      for (const id of userIds) {
+        const q = query(collection(db, "user_inventory"), where("user_id", "==", id));
+        const snap = await getDocs(q);
+        for (const d of snap.docs) results.push({ id: d.id, ...toPlain(d.data() as Record<string, unknown>) });
+      }
+      return results;
+    },
+  },
+
+  customTaunts: {
+    async get(userId: string) {
+      const snap = await getDoc(doc(db, "user_custom_taunts", userId));
+      return snap.exists()
+        ? ({ user_id: userId, ...toPlain(snap.data()) } as unknown as CustomTaunt)
+        : null;
+    },
+    async set(userId: string, data: { asset_key: string; sha256: string }) {
+      const ref = doc(db, "user_custom_taunts", userId);
+      await setDoc(
+        ref,
+        { user_id: userId, ...data, is_equipped: true, created_at: new Date().toISOString() },
+        { merge: true },
+      );
+    },
+    async remove(userId: string) {
+      const ref = doc(db, "user_custom_taunts", userId);
+      await deleteDoc(ref);
     },
   },
 };
