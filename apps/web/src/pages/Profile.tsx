@@ -14,9 +14,11 @@ import {
   achievementIcon,
   type IconName,
 } from "@/components/ui";
-import { getLevel, formatAccuracy, formatCoins } from "@/utils/format";
+import { getLevel, formatAccuracy } from "@/utils/format";
+import { resolveEquipped, type EquippedSlots } from "@/components/UserCard";
 import { CustomTauntManager } from "@/components/CustomTauntManager";
 import { AvatarUploadManager } from "@/components/AvatarUploadManager";
+import { LoadoutPreview } from "@/components/LoadoutPreview";
 import type { UserSubjectStats, UserAchievement, ShopItem } from "@rivalr/shared";
 
 interface EnrichedAchievement {
@@ -42,6 +44,11 @@ export default function Profile() {
   const [statusSaved, setStatusSaved] = useState(false);
   const [equipped, setEquipped] = useState<
     { item: ShopItem; purchased_at: string }[]
+  >([]);
+  const [inventoryIds, setInventoryIds] = useState<string[]>([]);
+  const [shopItems, setShopItems] = useState<ShopItem[]>([]);
+  const [rawInventory, setRawInventory] = useState<
+    { item_id: string; is_equipped: boolean }[]
   >([]);
 
   useEffect(() => {
@@ -84,6 +91,12 @@ export default function Profile() {
       .map((i) => ({ item: shopItems.find((s) => s.id === i.item_id), purchased_at: i.purchased_at }))
       .filter((x): x is { item: ShopItem; purchased_at: string } => x.item !== undefined);
     setEquipped(eqItems);
+
+    setInventoryIds(inv.map((i) => i.item_id));
+    setShopItems(shopItems);
+    setRawInventory(
+      inv.map((i) => ({ item_id: i.item_id as string, is_equipped: Boolean(i.is_equipped) })),
+    );
   }
 
   if (!user) return null;
@@ -98,6 +111,17 @@ export default function Profile() {
     setTimeout(() => setStatusSaved(false), 1500);
   }
 
+  async function equipItem(item: ShopItem) {
+    if (!user) return;
+    const currentlyEquippedId = equipped.find((e) => e.item.category === item.category)?.item.id;
+    if (currentlyEquippedId === item.id) {
+      await firestore.userInventory.unequip(user.id, item.id);
+    } else {
+      await firestore.userInventory.equip(user.id, item.id, currentlyEquippedId);
+    }
+    await loadData();
+  }
+
   const level = getLevel(user.xp);
   const totalQuizzes = subjectStats.reduce((s, st) => s + st.quizzes_completed, 0);
   const totalCorrect = subjectStats.reduce((s, st) => s + st.correct_answers, 0);
@@ -106,6 +130,7 @@ export default function Profile() {
   const unlockedIds = new Set(achievements.map((a) => a.achievement_id));
   const locked =
     catalog.length > 0 ? catalog.filter((c) => !unlockedIds.has(c.id)) : [];
+  const equippedSlots: EquippedSlots = resolveEquipped(rawInventory, shopItems);
 
   return (
     <div className="mx-auto max-w-4xl animate-fade-in">
@@ -173,7 +198,18 @@ export default function Profile() {
                 {activeTab === "achievements" && (
                   <AchievementsTab achievements={achievements} locked={locked} />
                 )}
-                {activeTab === "equipped" && <EquippedTab equipped={equipped} onChanged={() => loadData()} />}
+                {activeTab === "equipped" && (
+                  <EquippedTab
+                    equipped={equipped}
+                    ownedIds={inventoryIds}
+                    items={shopItems}
+                    slots={equippedSlots}
+                    userName={user?.name ?? ""}
+                    avatarUrl={user?.avatar_url ?? null}
+                    onEquip={equipItem}
+                    onChanged={() => loadData()}
+                  />
+                )}
               </>
             )}
           </Tabs>
@@ -288,19 +324,32 @@ const ALL_CATEGORIES = ["avatar_frame", "name_glow", "title", "taunt", "quiz_the
 
 function EquippedTab({
   equipped,
+  ownedIds,
+  items,
+  slots,
+  userName,
+  avatarUrl,
+  onEquip,
   onChanged,
 }: {
   equipped: { item: ShopItem; purchased_at: string }[];
+  ownedIds: string[];
+  items: ShopItem[];
+  slots: EquippedSlots;
+  userName: string;
+  avatarUrl: string | null;
+  onEquip: (item: ShopItem) => void;
   onChanged?: () => void;
 }) {
-  const byCat = new Map(equipped.map((e) => [e.item.category, e]));
   return (
     <div className="space-y-2.5 animate-fade-in">
+      <LoadoutPreview name={userName} avatarUrl={avatarUrl} slots={slots} />
       <CustomTauntManager onChanged={onChanged} />
       {ALL_CATEGORIES.map((cat) => {
-        const entry = byCat.get(cat);
         const icon: IconName =
           cat === "taunt" ? "flame" : cat === "quiz_theme" ? "target" : cat === "sound_effect" ? "play" : cat === "title" ? "star" : cat === "name_glow" ? "crown" : "user";
+        const owned = items.filter((i) => i.category === cat && ownedIds.includes(i.id));
+        const current = equipped.find((e) => e.item.category === cat)?.item.id;
         return (
           <Card key={cat} className="flex items-center gap-4 p-4">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-overpanel text-volt">
@@ -308,32 +357,50 @@ function EquippedTab({
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium">{CATEGORY_LABELS[cat]}</p>
-              {entry ? (
-                <>
-                  <p className="text-xs text-ink-muted">
-                    {entry.item.name} · {formatCoins(entry.item.coin_cost)}
-                  </p>
-                  {entry.item.preview_data && (cat === "taunt" || cat === "title") ? (
-                    <p className="mt-1 text-lg leading-none">{entry.item.preview_data}</p>
-                  ) : null}
-                  {entry.item.preview_data && cat === "name_glow" ? (
-                    <p
-                      className="mt-1 text-lg font-bold"
-                      style={{ color: entry.item.preview_data.startsWith("#") ? entry.item.preview_data : "inherit" }}
-                    >
-                      {entry.item.preview_data.startsWith("#") ? "Aa" : entry.item.preview_data}
-                    </p>
-                  ) : null}
-                </>
+              {owned.length > 0 ? (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {owned.map((item) => {
+                    const isEq = current === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => onEquip(item)}
+                        title={item.name}
+                        className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium transition-colors ${
+                          isEq
+                            ? "border-volt bg-volt text-field"
+                            : "border-line bg-panel text-ink-soft hover:border-line-strong"
+                        }`}
+                      >
+                        {cat === "name_glow" && item.preview_data?.startsWith("#") ? (
+                          <span
+                            className="h-3 w-3 rounded-full"
+                            style={{ backgroundColor: item.preview_data }}
+                          />
+                        ) : null}
+                        {cat === "quiz_theme" && item.preview_data?.startsWith("#") ? (
+                          <span
+                            className="h-3 w-3 rounded-sm border border-line"
+                            style={{ backgroundColor: item.preview_data }}
+                          />
+                        ) : null}
+                        {cat === "avatar_frame" && item.preview_data && !item.preview_data.startsWith("#") ? (
+                          <span className="text-sm leading-none">{item.preview_data}</span>
+                        ) : null}
+                        <span>{cat === "title" || cat === "taunt" ? item.preview_data || item.name : item.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               ) : (
-                <p className="text-xs text-ink-faint">Not equipped</p>
+                <p className="text-xs text-ink-faint">Not owned yet</p>
               )}
             </div>
             <Link
               to="/shop"
               className="shrink-0 text-sm font-medium text-volt transition-colors hover:text-volt-soft"
             >
-              Change
+              Shop
             </Link>
           </Card>
         );
