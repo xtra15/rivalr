@@ -16,6 +16,7 @@ import {
   Button,
   FormulaText,
   useToast,
+  type IconName,
 } from "@/components/ui";
 import { formatAccuracy, formatTime, getLevel } from "@/utils/format";
 import { GuildSettings } from "@/components/GuildSettings";
@@ -125,11 +126,14 @@ export default function GuildHome() {
       <div className="mb-8 flex flex-col gap-4 rounded-lg border border-line bg-panel p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-overpanel text-volt">
-            <Icon name="users" size={24} />
+            <Icon name={(guild.icon as IconName) || "users"} size={24} />
           </div>
           <div>
             <p className="eyebrow text-ink-muted">Guild</p>
             <h1 className="font-display text-2xl uppercase tracking-wide sm:text-3xl">{guild.name}</h1>
+            {guild.description ? (
+              <p className="mt-0.5 max-w-md text-sm text-ink-muted">{guild.description}</p>
+            ) : null}
             <button
               onClick={copyInvite}
               className="mt-1 inline-flex items-center gap-1.5 rounded-md text-[13px] font-medium text-ink-muted transition-colors hover:text-volt"
@@ -159,7 +163,13 @@ export default function GuildHome() {
         </div>
       </div>
 
-      <GuildSettings guildId={guildId!} guildName={guild.name} createdBy={guild.created_by} />
+      <GuildSettings
+        guildId={guildId!}
+        guildName={guild.name}
+        guildDescription={guild.description}
+        guildIcon={guild.icon}
+        createdBy={guild.created_by}
+      />
 
       <div className="mb-6 flex flex-wrap gap-2">
         <StatPill value={String(members.length)} label={members.length === 1 ? "member" : "members"} />

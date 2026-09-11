@@ -10,6 +10,7 @@ import {
   CoinBalance,
   Badge,
   Icon,
+  Button,
   EmptyState,
   achievementIcon,
 } from "@/components/ui";
@@ -31,10 +32,12 @@ interface CatalogAchievement {
 }
 
 export default function Profile() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [subjectStats, setSubjectStats] = useState<UserSubjectStats[]>([]);
   const [achievements, setAchievements] = useState<EnrichedAchievement[]>([]);
   const [catalog, setCatalog] = useState<CatalogAchievement[]>([]);
+  const [status, setStatus] = useState(user?.status ?? "");
+  const [statusSaved, setStatusSaved] = useState(false);
   const [equipped, setEquipped] = useState<
     { item: ShopItem; purchased_at: string }[]
   >([]);
@@ -83,6 +86,16 @@ export default function Profile() {
 
   if (!user) return null;
 
+  async function saveStatus() {
+    if (!user) return;
+    const trimmed = status.trim().slice(0, 60);
+    await firestore.users.updateStatus(user.id, trimmed);
+    await refreshUser();
+    setStatus(trimmed);
+    setStatusSaved(true);
+    setTimeout(() => setStatusSaved(false), 1500);
+  }
+
   const level = getLevel(user.xp);
   const totalQuizzes = subjectStats.reduce((s, st) => s + st.quizzes_completed, 0);
   const totalCorrect = subjectStats.reduce((s, st) => s + st.correct_answers, 0);
@@ -99,6 +112,27 @@ export default function Profile() {
           <Avatar src={user.avatar_url} name={user.name} size="lg" />
           <h1 className="mt-4 font-display text-2xl uppercase tracking-wide">{user.name}</h1>
           <p className="mt-1 text-sm text-ink-muted">{user.email}</p>
+
+          <div className="mt-4">
+            <div className="flex items-center gap-2">
+              <input
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                maxLength={60}
+                placeholder="Add a status…"
+                aria-label="Profile status"
+                className="min-w-0 flex-1 rounded-md border border-line-strong bg-field px-3 py-1.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-volt/20"
+              />
+              <Button
+                size="sm"
+                variant={statusSaved ? "secondary" : "primary"}
+                disabled={status === (user.status ?? "") || statusSaved}
+                onClick={saveStatus}
+              >
+                {statusSaved ? "Saved" : "Set status"}
+              </Button>
+            </div>
+          </div>
 
           <div className="mt-6">
             <div className="mb-2 flex items-baseline justify-between">

@@ -71,7 +71,13 @@ export const firestore = {
       const snap = await getDocs(q);
       return snap.empty ? null : { id: snap.docs[0]!.id, ...toPlain(snap.docs[0]!.data()) };
     },
-    async create(data: { name: string; invite_code: string; created_by: string }) {
+    async create(data: {
+      name: string;
+      invite_code: string;
+      created_by: string;
+      description?: string;
+      icon?: string;
+    }) {
       const ref = doc(collection(db, "guilds"));
       await setDoc(ref, { ...data, created_at: new Date().toISOString() });
       return { id: ref.id, ...data };

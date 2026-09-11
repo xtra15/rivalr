@@ -20,6 +20,7 @@ export default function QuizLobby() {
   const [chapterNum, setChapterNum] = useState<number>(1);
   const [difficulty, setDifficulty] = useState<Difficulty>("Easy");
   const [count, setCount] = useState(10);
+  const [timerEnabled, setTimerEnabled] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -65,6 +66,7 @@ export default function QuizLobby() {
         time_taken_seconds: 0,
         xp_earned: 0,
         coins_earned: 0,
+        timer_enabled: timerEnabled,
         questions_data: data.questions.map((q) => ({
           question: q.question,
           options: q.options,
@@ -169,6 +171,34 @@ export default function QuizLobby() {
               <p className="text-sm text-ink-soft">{count} questions</p>
             </span>
           </Card>
+
+          <button
+            onClick={() => setTimerEnabled((t) => !t)}
+            className={`mb-4 flex w-full items-center justify-between rounded-lg border p-4 text-left transition-colors ${
+              timerEnabled ? "border-volt/60 bg-volt/10" : "border-line bg-panel hover:border-line-strong"
+            }`}
+          >
+            <span className="flex items-center gap-2.5">
+              <Icon name="timer" size={18} className={timerEnabled ? "text-volt" : "text-ink-muted"} />
+              <span>
+                <span className="block text-sm font-medium">Timed mode</span>
+                <span className="block text-xs text-ink-muted">
+                  {timerEnabled ? "Per-question timer · 60s each" : "Relaxed, no timer"}
+                </span>
+              </span>
+            </span>
+            <span
+              className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+                timerEnabled ? "bg-volt" : "bg-overpanel"
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 h-5 w-5 rounded-full bg-ink transition-all ${
+                  timerEnabled ? "left-[22px] bg-field" : "left-0.5 bg-ink-muted"
+                }`}
+              />
+            </span>
+          </button>
 
           {error ? (
             <p className="mb-4 flex items-center gap-2 text-sm text-danger animate-slide-down">

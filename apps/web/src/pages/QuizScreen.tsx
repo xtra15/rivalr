@@ -17,6 +17,7 @@ export default function QuizScreen() {
   const [showResult, setShowResult] = useState(false);
   const [streak, setStreak] = useState(0);
   const [timeElapsed, setTimeElapsed] = useState(0);
+  const [remaining, setRemaining] = useState(60);
   const [loading, setLoading] = useState(true);
   const timerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
@@ -32,6 +33,25 @@ export default function QuizScreen() {
     }, 1000);
     return () => clearInterval(timerRef.current);
   }, [attempt, showResult]);
+
+  useEffect(() => {
+    if (attempt?.timer_enabled) setRemaining(60);
+  }, [currentIndex, attempt?.id]);
+
+  useEffect(() => {
+    if (!attempt?.timer_enabled || showResult) return;
+    const t = setInterval(() => {
+      setRemaining((r) => (r <= 1 ? 0 : r - 1));
+    }, 1000);
+    return () => clearInterval(t);
+  }, [attempt?.timer_enabled, showResult, currentIndex]);
+
+  useEffect(() => {
+    if (attempt?.timer_enabled && remaining === 0 && !showResult) {
+      setShowResult(true);
+      setSelected(null);
+    }
+  }, [remaining, attempt?.timer_enabled, showResult]);
 
   async function loadAttempt() {
     if (!quizId) return;
@@ -116,13 +136,20 @@ export default function QuizScreen() {
           Question {currentIndex + 1} of {attempt.total_questions}
         </p>
         <div className="flex items-center gap-4">
-          <span
-            className={`font-mono text-[15px] tabular-nums text-ink ${
-              timeElapsed >= 10 ? "text-ink" : ""
-            }`}
-          >
-            {formatTime(timeElapsed)}
-          </span>
+          {attempt.timer_enabled ? (
+            <span
+              className={`inline-flex items-center gap-1.5 font-mono text-[15px] tabular-nums ${
+                remaining <= 10 ? "text-danger" : "text-ink"
+              }`}
+            >
+              <Icon name="timer" size={16} />
+              {formatTime(remaining)}
+            </span>
+          ) : (
+            <span className="font-mono text-[15px] tabular-nums text-ink">
+              {formatTime(timeElapsed)}
+            </span>
+          )}
           <Link
             to={`/guild/${guildId}`}
             className="text-[13px] text-ink-faint transition-colors hover:text-ink-muted"

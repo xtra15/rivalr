@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { firestore } from "@/lib/firestore";
-import { Button, Icon, Input, useToast } from "@/components/ui";
+import { Button, Icon, Input, IconPicker, useToast } from "@/components/ui";
 
 interface GuildCreateModalProps {
   open: boolean;
@@ -13,6 +13,8 @@ export function GuildCreateModal({ open, onClose, onCreated }: GuildCreateModalP
   const { user } = useAuth();
   const { toast } = useToast();
   const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [icon, setIcon] = useState("target");
   const [busy, setBusy] = useState(false);
 
   if (!open) return null;
@@ -29,6 +31,8 @@ export function GuildCreateModal({ open, onClose, onCreated }: GuildCreateModalP
         name: trimmed,
         invite_code: code,
         created_by: user.id,
+        description: description.trim(),
+        icon,
       });
       if (guild) {
         await firestore.guildMembers.add(guild.id, user.id);
@@ -64,6 +68,25 @@ export function GuildCreateModal({ open, onClose, onCreated }: GuildCreateModalP
         <p className="mt-1 text-right text-[11px] text-ink-faint">
           {trimmed.length}/40
         </p>
+
+        <label className="mb-1.5 mt-4 block text-sm font-medium text-ink-soft">
+          Icon
+        </label>
+        <IconPicker value={icon} onChange={setIcon} />
+
+        <label htmlFor="guild-description" className="mb-1.5 mt-4 block text-sm font-medium text-ink-soft">
+          Description <span className="text-ink-faint">(optional)</span>
+        </label>
+        <textarea
+          id="guild-description"
+          rows={2}
+          maxLength={160}
+          placeholder="e.g. Form 5 Biology revision squad. We grind KBAT every night."
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="w-full resize-none rounded-md border border-line-strong bg-field px-3.5 py-2 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-volt/20"
+        />
+
         <div className="mt-5 flex justify-end gap-2">
           <Button variant="secondary" onClick={onClose}>Cancel</Button>
           <Button disabled={!valid || busy} onClick={create}>

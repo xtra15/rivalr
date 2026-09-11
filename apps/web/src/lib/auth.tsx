@@ -15,6 +15,7 @@ export interface User {
   avatar_url: string | null;
   xp: number;
   coins: number;
+  status?: string;
 }
 
 interface AuthContextType {

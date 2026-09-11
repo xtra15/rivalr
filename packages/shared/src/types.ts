@@ -7,6 +7,7 @@ export interface User {
   xp: number;
   coins: number;
   created_at: string;
+  status?: string;
 }
 
 export interface Guild {
@@ -15,6 +16,8 @@ export interface Guild {
   invite_code: string;
   created_by: string;
   created_at: string;
+  description?: string;
+  icon?: string;
 }
 
 export interface GuildMember {
@@ -40,6 +43,7 @@ export interface QuizAttempt {
   coins_earned: number;
   questions_data: QuestionData[];
   completed_at: string;
+  timer_enabled?: boolean;
 }
 
 export interface QuestionData {

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { firestore } from "@/lib/firestore";
-import { Card, Icon, Input, Button, StatPill, EmptyState, ProgressBar, LiveBadge, useToast } from "@/components/ui";
+import { Card, Icon, Input, Button, StatPill, EmptyState, ProgressBar, LiveBadge, useToast, type IconName } from "@/components/ui";
 import { GuildCreateModal } from "@/components/GuildCreateModal";
 import { getLevel, formatCoins } from "@/utils/format";
 import type { Guild } from "@rivalr/shared";
@@ -194,7 +194,7 @@ export default function Dashboard() {
             <Link key={guild.id} to={`/guild/${guild.id}`} className="group">
               <Card hover className="flex items-center gap-4 p-5">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-overpanel text-volt">
-                  <Icon name="users" size={22} />
+                  <Icon name={(guild.icon as IconName) || "users"} size={22} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <h3 className="truncate font-semibold">{guild.name}</h3>
