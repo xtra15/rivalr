@@ -13,7 +13,6 @@ export { CoinBalance } from "./CoinBalance";
 export { RankBadge } from "./RankBadge";
 export { ChapterBadge } from "./ChapterBadge";
 export { FormulaText } from "./FormulaText";
-export { LiveBadge } from "./LiveBadge";
 export { IconPicker } from "./IconPicker";
 export { ToastProvider, useToast } from "./toast";
 export { Icon, LogoMark, GoogleLogo, achievementIcon } from "./Icon";

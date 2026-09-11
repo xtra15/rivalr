@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { firestore } from "@/lib/firestore";
-import { Card, Icon, Input, Button, StatPill, EmptyState, ProgressBar, LiveBadge, useToast, type IconName } from "@/components/ui";
+import { Card, Icon, Input, Button, StatPill, EmptyState, ProgressBar, useToast, type IconName } from "@/components/ui";
 import { GuildCreateModal } from "@/components/GuildCreateModal";
 import { getLevel, formatCoins } from "@/utils/format";
 import type { Guild } from "@rivalr/shared";
@@ -72,15 +72,12 @@ export default function Dashboard() {
 
   return (
     <div className="mx-auto max-w-4xl">
-      <div className="mb-6 flex items-end justify-between gap-4">
+      <div className="flex items-end justify-between gap-4">
         <div>
           <p className="eyebrow text-ink-muted">Player</p>
           <h1 className="font-display text-3xl uppercase tracking-wide sm:text-4xl">
             {user?.name?.split(" ")[0] ?? "—"}
           </h1>
-        </div>
-        <div className="flex items-center gap-2 rounded-md border border-line bg-panel px-3 py-1.5">
-          <LiveBadge />
         </div>
       </div>
 

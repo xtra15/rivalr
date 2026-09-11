@@ -11,7 +11,6 @@ import {
   SubjectPill,
   DifficultyBadge,
   ChapterBadge,
-  LiveBadge,
   Icon,
   Button,
   FormulaText,
@@ -154,7 +153,6 @@ export default function GuildHome() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <LiveBadge />
           {user?.google_id === guild.created_by ? (
             <button
               onClick={() => setShowSettings((s) => !s)}
