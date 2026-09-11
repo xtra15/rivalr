@@ -101,37 +101,44 @@ export default function GuildHome() {
 
   return (
     <div className="mx-auto max-w-4xl animate-fade-in">
-      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="mb-8 flex flex-col gap-4 rounded-lg border border-line bg-panel p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-accent/10 text-accent">
-            <Icon name="users" size={26} />
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-overpanel text-volt">
+            <Icon name="users" size={24} />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{guild.name}</h1>
+            <p className="eyebrow text-ink-muted">Guild</p>
+            <h1 className="font-display text-2xl uppercase tracking-wide sm:text-3xl">{guild.name}</h1>
             <button
               onClick={copyInvite}
-              className="mt-1 inline-flex items-center gap-1.5 rounded-lg text-sm font-medium text-ink-muted transition-colors hover:text-accent"
+              className="mt-1 inline-flex items-center gap-1.5 rounded-md text-[13px] font-medium text-ink-muted transition-colors hover:text-volt"
             >
               {inviteCopied ? (
                 <>
-                  <Icon name="check" size={15} className="text-success" />
+                  <Icon name="check" size={14} className="text-success" />
                   <span className="text-success">Copied</span>
                 </>
               ) : (
                 <>
-                  <Icon name="copy" size={15} />
-                  <span className="font-mono tracking-wider">{guild.invite_code}</span>
+                  <Icon name="copy" size={14} />
+                  <span className="font-mono tracking-wider text-ink-soft">{guild.invite_code}</span>
                 </>
               )}
             </button>
           </div>
         </div>
-        <Link to={`/guild/${guildId}/quiz`}>
-          <Button size="lg" className="w-full sm:w-auto">
-            <Icon name="play" size={17} fill />
-            Start Quiz
-          </Button>
-        </Link>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 rounded-md border border-line bg-field px-3 py-1.5">
+            <span className="h-2 w-2 animate-pulse-soft rounded-full bg-volt" />
+            <span className="eyebrow text-volt">Live</span>
+          </div>
+          <Link to={`/guild/${guildId}/quiz`}>
+            <Button size="lg" className="w-full sm:w-auto">
+              <Icon name="play" size={17} fill />
+              Start Quiz
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <Tabs
@@ -174,7 +181,12 @@ export default function GuildHome() {
                   </div>
                   <div className="space-y-2">
                     {leaderboard.map((entry, i) => (
-                      <Card key={entry.user.id} className="flex items-center gap-3 p-3.5">
+                      <Card
+                        key={entry.user.id}
+                        className={`flex items-center gap-3 p-3.5 ${
+                          i === 0 ? "border-volt/50 bg-volt/10" : ""
+                        }`}
+                      >
                         <RankBadge rank={i} />
                         <Avatar src={entry.user.avatar_url} name={entry.user.name} size="md" />
                         <div className="min-w-0 flex-1">
@@ -183,7 +195,7 @@ export default function GuildHome() {
                             {entry.quizCount} quizzes · {formatAccuracy(entry.totalCorrect, entry.totalQuestions)}
                           </p>
                         </div>
-                        <span className="text-sm font-semibold tabular-nums text-accent">
+                        <span className="text-sm font-semibold tabular-nums text-volt">
                           {entry.totalXP}
                           <span className="ml-1 text-xs font-medium text-ink-muted">XP</span>
                         </span>
@@ -249,17 +261,17 @@ export default function GuildHome() {
 function RankBadge({ rank }: { rank: number }) {
   if (rank === 0) {
     return (
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-400 text-ink shadow-card">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-volt text-field shadow-card">
         <Icon name="crown" size={16} strokeWidth={2.25} />
       </div>
     );
   }
   const styles =
     rank === 1
-      ? "bg-line text-ink-soft ring-line-strong"
+      ? "bg-overpanel text-ink-muted ring-line-strong"
       : rank === 2
-        ? "bg-orange-500/10 text-orange-700 ring-orange-500/30"
-        : "bg-wash text-ink-muted ring-line-strong";
+        ? "bg-warning/10 text-warning ring-warning/25"
+        : "bg-overpanel text-ink-muted ring-line-strong";
   return (
     <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold tabular-nums ring-1 ${styles}`}>
       {rank + 1}
@@ -316,8 +328,8 @@ function RankingsTab({
               setDifficulty(null);
             }}
             aria-pressed={subject === s}
-            className={`rounded-full px-4 py-2 text-sm font-medium transition-all
-              ${subject === s ? "bg-accent text-white shadow-card" : "bg-wash text-ink-soft hover:bg-line hover:text-ink"}`}
+            className={`rounded-md px-4 py-2 text-sm font-medium transition-all
+              ${subject === s ? "bg-accent text-field shadow-card" : "bg-overpanel text-ink-soft hover:bg-line-strong hover:text-ink"}`}
           >
             {s}
           </button>
@@ -329,7 +341,7 @@ function RankingsTab({
           <select
             value={chapterNum ?? ""}
             onChange={(e) => setChapterNum(e.target.value ? Number(e.target.value) : null)}
-            className="rounded-xl border border-line-strong bg-surface px-3.5 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-accent/20"
+            className="rounded-md border border-line-strong bg-panel px-3.5 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-volt/20"
           >
             <option value="">All chapters</option>
             {chapters.map((c) => (
@@ -344,8 +356,8 @@ function RankingsTab({
               key={d}
               onClick={() => setDifficulty(difficulty === d ? null : d)}
               aria-pressed={difficulty === d}
-              className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all
-                ${difficulty === d ? "bg-ink text-white" : "bg-wash text-ink-soft hover:bg-line"}`}
+              className={`rounded-md px-3 py-1.5 text-xs font-medium transition-all
+                ${difficulty === d ? "bg-ink text-field" : "bg-overpanel text-ink-soft hover:bg-line-strong"}`}
             >
               {d}
             </button>
@@ -380,7 +392,7 @@ function RankingsTab({
                     {entry.attempts} attempts · {formatAccuracy(entry.correct, entry.attempts * 10)}
                   </p>
                 </div>
-                <span className="text-sm font-semibold tabular-nums text-accent">
+                <span className="text-sm font-semibold tabular-nums text-volt">
                   {entry.xp}
                   <span className="ml-1 text-xs font-medium text-ink-muted">XP</span>
                 </span>
@@ -394,7 +406,7 @@ function RankingsTab({
 }
 
 const SELECT_STYLE =
-  "rounded-xl border border-line-strong bg-surface px-3.5 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-accent/20";
+  "rounded-md border border-line-strong bg-panel px-3.5 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-volt/20";
 
 function HistoryTab({
   members,
@@ -459,7 +471,7 @@ function HistoryTab({
                   {a.questions_data.map((q, qi) => (
                     <div
                       key={qi}
-                      className="rounded-2xl border border-line bg-wash/60 p-4"
+                      className="rounded-lg border border-line bg-overpanel/60 p-4"
                     >
                       <p className="text-sm font-medium leading-relaxed">
                         <span className="mr-1.5 text-ink-muted">Q{qi + 1}.</span>
