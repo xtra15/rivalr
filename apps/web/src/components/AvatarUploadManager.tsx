@@ -68,7 +68,7 @@ export function AvatarUploadManager() {
         onChange={(e) => handleFile(e.target.files?.[0])}
       />
       <p className="w-full text-[11px] leading-relaxed text-ink-faint">
-        GIF, PNG or JPEG. Animated GIFs stay animated everywhere, like Discord.
+        GIF, PNG or JPEG. Animated GIFs stay animated everywhere.
       </p>
     </div>
   );

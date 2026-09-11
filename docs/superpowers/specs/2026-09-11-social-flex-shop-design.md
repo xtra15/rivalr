@@ -40,7 +40,7 @@ Expand the rivalr shop from a display-only bookmark into a full social flex syst
 
 Own profile at `/profile` redirects to `/profile/:userId` or renders identically (owner's choice, redirect preferred to avoid duplicate routes).
 
-### Layout (Discord-inspired)
+### Layout (chat-app inspired)
 - Header: equipped **name glow** tints background; avatar with **frame** centered below
 - Identity row: display name + **title** tag + level pill
 - Stats: level, XP, coins (coins visible as flex — email never shown)
