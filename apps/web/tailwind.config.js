@@ -56,6 +56,16 @@ export default {
         success: "#3DDC84",
         danger: "#FF4D4F",
         warning: "#FFB02E",
+        gold: "#F5C842",
+        silver: "#B0B0B0",
+        bronze: "#C47B3A",
+        orange: "#FF8C42",
+        subject: {
+          bio: "#3DDB6F",
+          chem: "#F5C842",
+          phys: "#6B9CFF",
+          math: "#FF6B6B",
+        },
       },
       fontFamily: {
         sans: [

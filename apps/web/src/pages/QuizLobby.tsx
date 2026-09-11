@@ -104,17 +104,22 @@ export default function QuizLobby() {
 
   return (
     <div className="mx-auto max-w-xl animate-fade-in">
-      <button
-        onClick={() => navigate(`/guild/${guildId}`)}
-        className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-ink-muted transition-colors hover:text-volt"
-      >
-        <Icon name="arrow-left" size={16} />
-        Back to guild
-      </button>
+      <div className="mb-6 flex items-center justify-between">
+        <button
+          onClick={() => (step > 0 ? setStep(step - 1) : navigate(`/guild/${guildId}`))}
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-muted transition-colors hover:text-volt"
+        >
+          <Icon name="arrow-left" size={16} />
+          {step > 0 ? "Back" : "Back to guild"}
+        </button>
+        <p className="text-[13px] text-ink-muted">
+          Step {step + 1} of 5
+        </p>
+      </div>
 
       <h1 className="font-display text-3xl uppercase tracking-wide">New Quiz</h1>
 
-      <div className="mt-6 grid grid-cols-5 gap-2">
+      <div className="mt-5 grid grid-cols-5 gap-2">
         {STEP_LABELS.map((label, i) => (
           <div key={label} className="flex flex-col gap-1.5">
             <div
@@ -128,11 +133,7 @@ export default function QuizLobby() {
         ))}
       </div>
 
-      <p className="mb-4 mt-4 text-sm text-ink-muted">
-        Step {step + 1} of 5 — {STEP_LABELS[step]}
-      </p>
-
-      <div className="grid gap-2.5">
+      <div className="mt-4 grid gap-2.5">
         {options.map((opt, i) => (
           <button
             key={i}
@@ -180,6 +181,9 @@ export default function QuizLobby() {
             <Icon name="play" size={18} fill />
             Start Quiz
           </Button>
+          <p className="mt-3 text-center text-xs text-ink-faint">
+            Questions are AI-generated and checked against the SPM syllabus.
+          </p>
         </div>
       )}
     </div>

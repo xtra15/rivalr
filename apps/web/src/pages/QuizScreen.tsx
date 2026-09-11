@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { firestore } from "@/lib/firestore";
-import { Button, ProgressBar, Card, Icon, LoadingScreen } from "@/components/ui";
+import { ProgressBar, Icon, LoadingScreen } from "@/components/ui";
 import { formatTime } from "@/utils/format";
 import type { QuizAttempt } from "@rivalr/shared";
 
@@ -107,37 +107,45 @@ export default function QuizScreen() {
   }
 
   const isCorrect = selected !== null && selected === currentQuestion.correct;
+  const isLast = currentIndex >= attempt.total_questions - 1;
 
   return (
-    <div className="mx-auto max-w-2xl animate-fade-in">
-      <div className="mb-3 flex items-center justify-between text-sm">
-        <div className="flex items-center gap-3">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-wash px-3 py-1.5 text-[13px] font-semibold tabular-nums text-ink ring-1 ring-inset ring-line-strong">
-            <Icon name="target" size={15} className="text-accent" />
-            {currentIndex + 1}
-            <span className="font-normal text-ink-muted">/</span>
-            {attempt.total_questions}
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-wash px-3 py-1.5 text-[13px] font-semibold tabular-nums text-ink ring-1 ring-inset ring-line-strong">
-            <Icon name="timer" size={15} className="text-ink-muted" />
+    <div className="mx-auto flex min-h-screen w-full max-w-2xl flex-col px-4 py-6 sm:px-6 animate-fade-in">
+      <div className="flex items-center justify-between text-sm">
+        <p className="text-[13px] text-ink-muted">
+          Question {currentIndex + 1} of {attempt.total_questions}
+        </p>
+        <div className="flex items-center gap-4">
+          <span
+            className={`font-mono text-[15px] tabular-nums text-ink ${
+              timeElapsed >= 10 ? "text-ink" : ""
+            }`}
+          >
             {formatTime(timeElapsed)}
           </span>
+          <Link
+            to={`/guild/${guildId}`}
+            className="text-[13px] text-ink-faint transition-colors hover:text-ink-muted"
+          >
+            Leave
+          </Link>
         </div>
-        {streak >= 3 ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-warning/10 px-3 py-1.5 text-[13px] font-semibold text-warning ring-1 ring-inset ring-warning/30 animate-scale-in">
-            <Icon name="flame" size={15} />
-            {streak} streak
-          </span>
-        ) : null}
       </div>
 
-      <ProgressBar value={currentIndex + 1} max={attempt.total_questions} />
+      <div className="mt-4">
+        <ProgressBar value={currentIndex + 1} max={attempt.total_questions} />
+      </div>
 
-      <Card className="mt-6 p-6 sm:p-7">
-        <p className="text-lg font-medium leading-relaxed sm:text-xl">{currentQuestion.question}</p>
-      </Card>
+      <div className="flex flex-1 flex-col items-center justify-center py-10 text-center">
+        <p className="mb-3 text-xs text-ink-muted">
+          Form {attempt.form} {attempt.subject} · Ch {attempt.chapter_number}
+        </p>
+        <p className="max-w-xl text-lg font-medium leading-relaxed text-ink sm:text-xl">
+          {currentQuestion.question}
+        </p>
+      </div>
 
-      <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+      <div className="flex flex-col gap-2.5">
         {currentQuestion.options.map((opt, i) => {
           const isSelected = selected === i;
           const isRight = showResult && i === currentQuestion.correct;
@@ -148,59 +156,69 @@ export default function QuizScreen() {
               key={i}
               onClick={() => handleAnswer(i)}
               disabled={showResult}
-              className={`group flex items-start gap-3 rounded-lg border p-4 text-left transition-all duration-150
-                ${
-                  isRight
-                    ? "border-volt/60 bg-volt/10"
-                    : isWrong
-                      ? "border-danger/60 bg-danger/10"
-                      : showResult
-                        ? "border-line bg-overpanel opacity-50"
-                        : isSelected
-                          ? "border-volt bg-volt/10"
-                          : "border-line bg-overpanel hover:border-line-strong hover:bg-panel-2 active:scale-[0.99]"
-                }`}
+              className={`group flex min-h-14 items-start gap-3 rounded-lg border px-3 text-left transition-all duration-150 sm:min-h-16 ${
+                isRight
+                  ? "border-success/60 bg-success/10"
+                  : isWrong
+                    ? "border-danger/60 bg-danger/10"
+                    : showResult
+                      ? "border-line bg-overpanel opacity-50"
+                      : isSelected
+                        ? "border-volt bg-panel-2"
+                        : "border-line bg-panel hover:border-line-strong hover:bg-panel-2 active:scale-[0.99]"
+              }`}
             >
               <span
-                className={`mt-px flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[13px] font-semibold transition-colors ${
+                className={`mt-3 flex h-7 w-8 shrink-0 items-center justify-center rounded-md text-[13px] font-semibold sm:mt-4 ${
                   isRight
-                    ? "bg-volt text-field"
+                    ? "bg-success/15 text-success"
                     : isWrong
-                      ? "bg-danger text-field"
-                      : isSelected || showResult
-                        ? "bg-line-strong text-ink"
-                        : "bg-overpanel text-ink-muted group-hover:bg-line-strong"
+                      ? "bg-danger/15 text-danger"
+                      : "text-ink-faint"
                 }`}
               >
                 {String.fromCharCode(65 + i)}
               </span>
-              <span className="text-[15px] leading-snug">{opt}</span>
-              {isRight ? <Icon name="check" size={16} className="mt-1 ml-auto shrink-0 text-volt" /> : null}
-              {isWrong ? <Icon name="x" size={16} className="mt-1 ml-auto shrink-0 text-danger" /> : null}
+              <span className="flex-1 py-3.5 text-[15px] leading-snug text-ink sm:py-4">
+                {opt}
+              </span>
+              {isRight ? <Icon name="check" size={18} className="mt-4 shrink-0 text-success" /> : null}
+              {isWrong ? <Icon name="x" size={18} className="mt-4 shrink-0 text-danger" /> : null}
             </button>
           );
         })}
       </div>
 
+      <div className="mt-4 flex h-8 items-center justify-between">
+        <div>
+          {streak >= 2 ? (
+            <span className="inline-flex items-center gap-1.5 text-sm text-ink">
+              <Icon name="flame" size={16} className="text-volt" />
+              {streak}
+            </span>
+          ) : null}
+        </div>
+      </div>
+
       {showResult && (
-        <div className="mt-5 animate-slide-up">
-          <Card
-            className={`p-5 ${
-              isCorrect
-                ? "border-volt/40 bg-volt/[0.08]"
-                : "border-danger/40 bg-danger/[0.08]"
-            }`}
-          >
-            <p className={`flex items-center gap-2 font-semibold ${isCorrect ? "text-volt" : "text-danger"}`}>
-              <Icon name={isCorrect ? "check-circle" : "x-circle"} size={19} />
-              {isCorrect ? "Correct!" : "Incorrect"}
+        <div
+          className={`mt-2 overflow-hidden rounded-lg border border-l-[3px] bg-panel animate-slide-up ${
+            isCorrect ? "border-l-success" : "border-l-danger"
+          }`}
+        >
+          <div className="space-y-1.5 px-4 pb-4 pt-3.5">
+            <p className={`text-sm font-semibold ${isCorrect ? "text-success" : "text-danger"}`}>
+              {isCorrect ? "Correct" : "Incorrect"}
             </p>
-            <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">{currentQuestion.explanation}</p>
-          </Card>
-          <Button className="mt-3 w-full" size="lg" onClick={nextQuestion}>
-            {currentIndex < attempt.total_questions - 1 ? "Next Question" : "See Results"}
-            <Icon name="chevron-right" size={17} />
-          </Button>
+            <p className="text-sm leading-relaxed text-ink-muted">{currentQuestion.explanation}</p>
+          </div>
+          <button
+            onClick={nextQuestion}
+            className="flex w-full items-center justify-end gap-1.5 border-t border-line bg-panel-2 px-4 py-3 text-sm font-semibold text-volt transition-colors hover:bg-overpanel"
+          >
+            {isLast ? "See results" : "Next"}
+            <Icon name="chevron-right" size={16} />
+          </button>
         </div>
       )}
     </div>

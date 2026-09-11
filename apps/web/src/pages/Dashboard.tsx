@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { firestore } from "@/lib/firestore";
-import { Card, Icon, Input, Button, StatCard, EmptyState, ProgressBar } from "@/components/ui";
+import { Card, Icon, Input, Button, StatPill, EmptyState, ProgressBar, useToast } from "@/components/ui";
 import { getLevel, formatCoins } from "@/utils/format";
 import type { Guild } from "@rivalr/shared";
 
 export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [guilds, setGuilds] = useState<(Guild & { member_count: number })[]>([]);
   const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
@@ -60,6 +61,7 @@ export default function Dashboard() {
       if (guild) {
         await firestore.guildMembers.add(guild.id, user.id);
         setShowCreate(false);
+        toast("Guild created.", "success");
         navigate(`/guild/${guild.id}`);
       }
     } finally {
@@ -77,8 +79,10 @@ export default function Dashboard() {
       if (guild) {
         await firestore.guildMembers.add(guild.id, user.id);
         setShowJoin(false);
+        toast("Joined the guild.", "success");
         navigate(`/guild/${guild.id}`);
       } else {
+        toast("No guild found with that invite code.", "error");
         setJoinError("No guild found with that invite code.");
       }
     } finally {
@@ -120,12 +124,10 @@ export default function Dashboard() {
         <ProgressBar value={level.currentXP} max={level.nextLevelXP} />
       </div>
 
-      <div className="mb-9 grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <StatCard label="Guilds" value={guilds.length} icon="users" />
-        <StatCard label="Total XP" value={user?.xp ?? 0} icon="zap" tint="accent" />
-        <div className="col-span-2 sm:col-span-1">
-          <StatCard label="Coins" value={formatCoins(user?.coins ?? 0)} icon="coin" tint="warning" />
-        </div>
+      <div className="mb-9 flex flex-wrap gap-2">
+        <StatPill value={String(guilds.length)} label={guilds.length === 1 ? "guild" : "guilds"} />
+        <StatPill value={String(user?.xp ?? 0)} label="xp" />
+        <StatPill value={formatCoins(user?.coins ?? 0)} label="coins" />
       </div>
 
       <div className="mb-4 flex items-center justify-between">
@@ -222,12 +224,17 @@ export default function Dashboard() {
         <EmptyState
           icon="users"
           title="No guilds yet"
-          description="Create your first study guild and invite your friends."
+          description="You're not in a guild. Create one or ask a friend for an invite link."
           action={
-            <Button onClick={() => setShowCreate(true)}>
-              <Icon name="plus" size={16} />
-              Create your first guild
-            </Button>
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button onClick={() => setShowCreate(true)}>
+                <Icon name="plus" size={16} />
+                Create a guild
+              </Button>
+              <Button variant="secondary" onClick={() => setShowJoin(true)}>
+                Join with a link
+              </Button>
+            </div>
           }
         />
       ) : (

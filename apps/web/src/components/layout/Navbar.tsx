@@ -1,6 +1,6 @@
-import { Link, NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
-import { Avatar, Icon, LogoMark, type IconName } from "@/components/ui";
+import { Avatar, CoinBalance, Icon, LogoMark, type IconName } from "@/components/ui";
 
 const navItems: { to: string; label: string; icon: IconName }[] = [
   { to: "/dashboard", label: "Dashboard", icon: "grid" },
@@ -10,55 +10,62 @@ const navItems: { to: string; label: string; icon: IconName }[] = [
 
 const TAB_ROUTES = new Set(["/dashboard", "/shop", "/profile"]);
 
-export function Navbar() {
+function isActivePath(locationPathname: string, to: string) {
+  return locationPathname === to || (to !== "/dashboard" && locationPathname.startsWith(to));
+}
+
+export function Sidebar() {
   const { user, signOut } = useAuth();
   const location = useLocation();
 
   if (!user) return null;
 
   return (
-    <nav className="sticky top-0 z-40 border-b border-line bg-field/85 backdrop-blur-xl">
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4 sm:px-6">
-        <Link to="/dashboard" className="flex items-center gap-2.5">
-          <LogoMark size={30} />
-          <span className="font-display text-lg uppercase tracking-wide">rivalr</span>
-        </Link>
+    <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-line bg-field md:flex">
+      <div className="flex h-14 items-center gap-2.5 px-5">
+        <LogoMark size={28} />
+        <span className="font-display text-base uppercase tracking-wide">rivalr</span>
+      </div>
 
-        <div className="mx-auto hidden items-center gap-1 md:flex">
-          {navItems.map((item) => (
+      <nav className="mt-2 flex flex-col gap-0.5 px-3">
+        {navItems.map((item) => {
+          const isActive = isActivePath(location.pathname, item.to);
+          return (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.to === "/dashboard"}
-              className={({ isActive }) =>
-                `flex items-center gap-1.5 rounded-md px-3.5 py-2 text-sm font-semibold transition-colors ${
-                  isActive || (item.to !== "/dashboard" && location.pathname.startsWith(item.to))
-                    ? "bg-overpanel text-ink"
-                    : "text-ink-muted hover:bg-overpanel/70 hover:text-ink"
-                }`
-              }
+              className={`relative flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
+                isActive ? "text-ink" : "text-ink-muted hover:bg-overpanel hover:text-ink"
+              }`}
             >
-              <Icon name={item.icon} size={17} />
+              {isActive ? (
+                <span className="absolute left-0 top-1/2 h-5 -translate-y-1/2 w-[3px] rounded-full bg-volt" />
+              ) : null}
+              <Icon name={item.icon} size={18} strokeWidth={isActive ? 2.25 : 1.75} />
               {item.label}
             </NavLink>
-          ))}
-        </div>
+          );
+        })}
+      </nav>
 
-        <div className="ml-auto flex items-center gap-2">
-          <button
-            onClick={signOut}
-            title="Sign out"
-            aria-label="Sign out"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-md text-ink-muted transition-colors hover:bg-overpanel hover:text-ink"
-          >
-            <Icon name="logout" size={18} />
-          </button>
-          <Link to="/profile" title="Your profile" className="shrink-0">
-            <Avatar src={user.avatar_url} name={user.name} size="sm" />
-          </Link>
+      <div className="mt-auto border-t border-line p-3">
+        <div className="flex items-center gap-3 rounded-md px-2 py-2">
+          <Avatar src={user.avatar_url} name={user.name} size="sm" />
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium leading-tight">{user.name}</p>
+            <CoinBalance coins={user.coins} className="text-xs" />
+          </div>
         </div>
+        <button
+          onClick={signOut}
+          className="mt-1 flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm text-ink-muted transition-colors hover:bg-overpanel hover:text-ink"
+        >
+          <Icon name="logout" size={16} />
+          Sign out
+        </button>
       </div>
-    </nav>
+    </aside>
   );
 }
 
@@ -75,28 +82,23 @@ export function MobileTabBar() {
       className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-field/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"
     >
       <div className="mx-auto grid max-w-md grid-cols-3">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.to === "/dashboard"}
-            className={({ isActive }) =>
-              `flex flex-col items-center gap-1 py-2.5 text-[11px] font-semibold transition-colors ${
-                isActive || (item.to !== "/dashboard" && location.pathname.startsWith(item.to))
-                  ? "text-volt"
-                  : "text-ink-muted"
-              }`
-            }
-          >
-            <Icon name={item.icon} size={22} strokeWidth={isActiveOrPath(location.pathname, item.to) ? 2.25 : 1.75} />
-            {item.label}
-          </NavLink>
-        ))}
+        {navItems.map((item) => {
+          const isActive = isActivePath(location.pathname, item.to);
+          return (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.to === "/dashboard"}
+              aria-label={item.label}
+              className={`flex flex-col items-center gap-1 py-3.5 transition-colors ${
+                isActive ? "text-volt" : "text-ink-muted"
+              }`}
+            >
+              <Icon name={item.icon} size={22} strokeWidth={isActive ? 2.25 : 1.75} />
+            </NavLink>
+          );
+        })}
       </div>
     </nav>
   );
-}
-
-function isActiveOrPath(pathname: string, to: string) {
-  return pathname === to || (to !== "/dashboard" && pathname.startsWith(to));
 }

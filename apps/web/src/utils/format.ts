@@ -79,7 +79,7 @@ export function formatCoins(n: number): string {
 
 export const DIFFICULTY_COLORS: Record<string, string> = {
   Easy: "border-success/25 bg-success/10 text-success",
-  Medium: "border-warning/25 bg-warning/10 text-warning",
-  Hard: "border-orange-600/25 bg-orange-600/10 text-orange-700",
+  Medium: "border-gold/25 bg-gold/10 text-gold",
+  Hard: "border-orange/25 bg-orange/10 text-orange",
   KBAT: "border-danger/25 bg-danger/10 text-danger",
 };
