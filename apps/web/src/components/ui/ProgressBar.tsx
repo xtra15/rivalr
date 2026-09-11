@@ -10,14 +10,14 @@ export function ProgressBar({
   value,
   max,
   className = "",
-  color = "bg-indigo-500",
+  color = "bg-accent",
   showLabel = false,
 }: ProgressBarProps) {
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
 
   return (
     <div className={`flex items-center gap-3 ${className}`}>
-      <div className="h-2 flex-1 overflow-hidden rounded-full bg-navy-800 ring-1 ring-inset ring-white/5">
+      <div className="h-2 flex-1 overflow-hidden rounded-full bg-line">
         <div
           className={`h-full rounded-full transition-all duration-500 ease-out ${color}`}
           style={{ width: `${pct}%` }}

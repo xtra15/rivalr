@@ -7,8 +7,6 @@ import {
   updateDoc,
   query,
   where,
-  orderBy,
-  limit,
   increment,
   type FieldValue,
   type DocumentData,
@@ -127,14 +125,15 @@ export const firestore = {
       await updateDoc(ref, data);
     },
     async getByGuild(guildId: string) {
-      const q = query(
-        collection(db, "quiz_attempts"),
-        where("guild_id", "==", guildId),
-        orderBy("completed_at", "desc"),
-        limit(50),
-      );
+      const q = query(collection(db, "quiz_attempts"), where("guild_id", "==", guildId));
       const snap = await getDocs(q);
-      return snap.docs.map((d) => ({ id: d.id, ...toPlain(d.data()) }));
+      return snap.docs
+        .map((d) => ({ id: d.id, ...toPlain(d.data()) }))
+        .sort((a, b) => {
+          const at = String((a as { completed_at?: string }).completed_at ?? "");
+          const bt = String((b as { completed_at?: string }).completed_at ?? "");
+          return at < bt ? 1 : at > bt ? -1 : 0;
+        });
     },
   },
 

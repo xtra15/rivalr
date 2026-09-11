@@ -7,11 +7,11 @@ interface BadgeProps {
 }
 
 const badgeVariants = {
-  default: "bg-navy-800 text-navy-300 border border-navy-700",
-  success: "bg-signal-success/10 text-signal-success border border-signal-success/20",
-  warning: "bg-signal-warning/10 text-signal-warning border border-signal-warning/20",
-  danger: "bg-signal-danger/10 text-signal-danger border border-signal-danger/20",
-  info: "bg-indigo-500/10 text-indigo-300 border border-indigo-500/20",
+  default: "bg-wash text-ink-muted border border-line",
+  success: "bg-success/10 text-success border border-success/25",
+  warning: "bg-warning/10 text-warning border border-warning/25",
+  danger: "bg-danger/10 text-danger border border-danger/25",
+  info: "bg-accent/10 text-accent border border-accent/25",
 };
 
 export function Badge({ children, variant = "default", className = "" }: BadgeProps) {

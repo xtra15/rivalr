@@ -118,7 +118,7 @@ export default function Shop() {
         categories.map((cat) => (
           <section key={cat} className="mb-9">
             <div className="mb-3 flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-navy-800 text-indigo-300">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-wash text-accent">
                 <Icon name={CATEGORY_ICONS[cat] ?? "bag"} size={16} />
               </div>
               <h2 className="text-base font-semibold">{CATEGORY_LABELS[cat] ?? cat}</h2>
@@ -177,7 +177,7 @@ export default function Shop() {
                           </Button>
                         )}
                         {!owned && !canAfford ? (
-                          <span className="text-xs text-navy-500">Not enough coins</span>
+                          <span className="text-xs text-ink-muted">Not enough coins</span>
                         ) : null}
                       </div>
                     </Card>

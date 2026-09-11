@@ -31,7 +31,7 @@ export function Avatar({ src, name, size = "md", className = "" }: AvatarProps) 
       <img
         src={src}
         alt={name}
-        className={`rounded-full object-cover ring-1 ring-white/10 ${sizes[size]} ${className}`}
+        className={`rounded-full object-cover ring-1 ring-line ${sizes[size]} ${className}`}
       />
     );
   }
@@ -39,7 +39,7 @@ export function Avatar({ src, name, size = "md", className = "" }: AvatarProps) 
   const hue = hueFor(name || "?");
   return (
     <div
-      className={`flex items-center justify-center rounded-full font-semibold text-white/90 ring-1 ring-white/10 select-none ${sizes[size]} ${className}`}
+      className={`flex items-center justify-center rounded-full font-semibold text-white ring-1 ring-white/20 select-none ${sizes[size]} ${className}`}
       style={{
         background: `linear-gradient(135deg, hsl(${hue} 55% 40%), hsl(${(hue + 40) % 360} 60% 30%))`,
       }}

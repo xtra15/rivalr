@@ -17,7 +17,7 @@ export function Navbar() {
   if (!user) return null;
 
   return (
-    <nav className="sticky top-0 z-40 border-b border-navy-800 bg-navy-900/80 backdrop-blur-xl">
+    <nav className="sticky top-0 z-40 border-b border-line bg-paper/80 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4 sm:px-6">
         <Link to="/dashboard" className="flex items-center gap-2.5">
           <LogoMark size={30} />
@@ -33,8 +33,8 @@ export function Navbar() {
               className={({ isActive }) =>
                 `flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-medium transition-colors ${
                   isActive || (item.to !== "/dashboard" && location.pathname.startsWith(item.to))
-                    ? "bg-navy-800 text-white"
-                    : "text-navy-400 hover:bg-navy-800/70 hover:text-navy-100"
+                    ? "bg-wash text-ink"
+                    : "text-ink-muted hover:bg-wash/70 hover:text-ink"
                 }`
               }
             >
@@ -49,7 +49,7 @@ export function Navbar() {
             onClick={signOut}
             title="Sign out"
             aria-label="Sign out"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-navy-400 transition-colors hover:bg-navy-800 hover:text-navy-100"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-ink-muted transition-colors hover:bg-wash hover:text-ink"
           >
             <Icon name="logout" size={18} />
           </button>
@@ -72,7 +72,7 @@ export function MobileTabBar() {
   return (
     <nav
       aria-label="Primary"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-navy-800 bg-navy-850/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"
     >
       <div className="mx-auto grid max-w-md grid-cols-3">
         {navItems.map((item) => (
@@ -83,8 +83,8 @@ export function MobileTabBar() {
             className={({ isActive }) =>
               `flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors ${
                 isActive || (item.to !== "/dashboard" && location.pathname.startsWith(item.to))
-                  ? "text-indigo-400"
-                  : "text-navy-400"
+                  ? "text-accent"
+                  : "text-ink-muted"
               }`
             }
           >

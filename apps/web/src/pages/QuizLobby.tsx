@@ -100,7 +100,7 @@ export default function QuizLobby() {
     <div className="mx-auto max-w-xl animate-fade-in">
       <button
         onClick={() => navigate(`/guild/${guildId}`)}
-        className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-navy-400 transition-colors hover:text-navy-100"
+        className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-ink-muted transition-colors hover:text-ink"
       >
         <Icon name="arrow-left" size={16} />
         Back to guild
@@ -111,15 +111,15 @@ export default function QuizLobby() {
       <div className="mt-6 grid grid-cols-5 gap-2">
         {STEP_LABELS.map((label, i) => (
           <div key={label} className="flex flex-col gap-1.5">
-            <div className={`h-1 rounded-full ${i <= step ? "bg-indigo-500" : "bg-navy-800"}`} aria-hidden="true" />
-            <span className={`text-[11px] font-medium uppercase tracking-wide ${i === step ? "text-indigo-300" : "text-navy-500"}`}>
+            <div className={`h-1 rounded-full ${i <= step ? "bg-accent" : "bg-wash"}`} aria-hidden="true" />
+            <span className={`text-[11px] font-medium uppercase tracking-wide ${i === step ? "text-accent" : "text-ink-muted"}`}>
               {label}
             </span>
           </div>
         ))}
       </div>
 
-      <p className="mb-4 mt-4 text-sm text-navy-400">
+      <p className="mb-4 mt-4 text-sm text-ink-muted">
         Step {step + 1} of 5 — {STEP_LABELS[step]}
       </p>
 
@@ -128,13 +128,13 @@ export default function QuizLobby() {
           <button
             key={i}
             onClick={() => selectStep(opt)}
-            className="surface-card group flex items-center justify-between p-4 text-left transition-all duration-150 hover:border-navy-700 hover:bg-navy-800 active:scale-[0.995]"
+            className="surface-card group flex items-center justify-between p-4 text-left transition-all duration-150 hover:border-line-strong hover:bg-wash active:scale-[0.995]"
           >
-            <span className="text-[15px] font-medium text-navy-100">{optionLabel(opt)}</span>
+            <span className="text-[15px] font-medium text-ink">{optionLabel(opt)}</span>
             <Icon
               name="chevron-right"
               size={18}
-              className="text-navy-600 transition-all group-hover:translate-x-0.5 group-hover:text-navy-300"
+              className="text-ink-faint transition-all group-hover:translate-x-0.5 group-hover:text-ink-soft"
             />
           </button>
         ))}
@@ -144,24 +144,24 @@ export default function QuizLobby() {
         <div className="mt-6">
           <Card className="mb-4 flex items-start justify-between gap-4 p-5">
             <div>
-              <p className="text-xs font-medium uppercase tracking-wider text-navy-500">
+              <p className="text-xs font-medium uppercase tracking-wider text-ink-muted">
                 Ready to Start
               </p>
               <p className="mt-1.5 font-semibold">
                 Form {form} {subject}
               </p>
-              <p className="mt-0.5 text-sm text-navy-300">
+              <p className="mt-0.5 text-sm text-ink-soft">
                 Ch. {chapterNum}: {selectedChapter.name}
               </p>
             </div>
             <span className="shrink-0 text-right">
-              <p className="text-sm font-medium text-navy-200">{difficulty}</p>
-              <p className="text-sm text-navy-300">{count} questions</p>
+              <p className="text-sm font-medium text-ink">{difficulty}</p>
+              <p className="text-sm text-ink-soft">{count} questions</p>
             </span>
           </Card>
 
           {error ? (
-            <p className="mb-4 flex items-center gap-2 text-sm text-signal-danger animate-slide-down">
+            <p className="mb-4 flex items-center gap-2 text-sm text-danger animate-slide-down">
               <Icon name="info" size={16} />
               {error}
             </p>

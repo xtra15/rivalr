@@ -15,6 +15,7 @@ export default function GuildHome() {
   const [chapterStats, setChapterStats] = useState<UserChapterStats[]>([]);
   const [inviteCopied, setInviteCopied] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!guildId) return;
@@ -23,25 +24,30 @@ export default function GuildHome() {
 
   async function loadGuild() {
     if (!guildId) return;
+    setLoadError(null);
+    try {
+      const g = await firestore.guilds.get(guildId);
+      setGuild(g as Guild);
 
-    const g = await firestore.guilds.get(guildId);
-    setGuild(g as Guild);
+      const memberRows = await firestore.guildMembers.getByGuild(guildId);
 
-    const memberRows = await firestore.guildMembers.getByGuild(guildId);
+      if (memberRows.length) {
+        const userIds = memberRows.map((m) => m.user_id as string);
+        const users = await firestore.usersBatch.getByIds(userIds);
+        setMembers(users as unknown as User[]);
+      }
 
-    if (memberRows.length) {
-      const userIds = memberRows.map((m) => m.user_id as string);
-      const users = await firestore.usersBatch.getByIds(userIds);
-      setMembers(users as unknown as User[]);
+      const quizData = await firestore.quizAttempts.getByGuild(guildId);
+      setAttempts(quizData as unknown as QuizAttempt[]);
+
+      const stats = await firestore.userChapterStats.getAll();
+      setChapterStats(stats as unknown as UserChapterStats[]);
+    } catch (e) {
+      console.error("Failed to load guild", e);
+      setLoadError("Could not load this guild. Please try again.");
+    } finally {
+      setLoading(false);
     }
-
-    const quizData = await firestore.quizAttempts.getByGuild(guildId);
-    setAttempts(quizData as unknown as QuizAttempt[]);
-
-    const stats = await firestore.userChapterStats.getAll();
-    setChapterStats(stats as unknown as UserChapterStats[]);
-
-    setLoading(false);
   }
 
   function copyInvite() {
@@ -51,13 +57,34 @@ export default function GuildHome() {
     setTimeout(() => setInviteCopied(false), 2000);
   }
 
-  if (loading || !guild) {
+  if (loading || (!guild && !loadError)) {
     return (
       <div className="mx-auto max-w-4xl">
         <div className="skeleton h-10 w-56 mb-4" />
         <div className="skeleton h-72 rounded-3xl" />
       </div>
     );
+  }
+
+  if (loadError) {
+    return (
+      <div className="mx-auto max-w-4xl">
+        <div className="surface-card flex flex-col items-center justify-center px-6 py-14 text-center">
+          <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-wash text-ink-muted">
+            <Icon name="info" size={26} />
+          </div>
+          <p className="text-base font-semibold">{loadError}</p>
+          <Button className="mt-5" size="sm" onClick={() => loadGuild()}>
+            <Icon name="refresh" size={16} />
+            Try again
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!guild) {
+    return null;
   }
 
   const memberMap = new Map(members.map((m) => [m.id, m]));
@@ -76,19 +103,19 @@ export default function GuildHome() {
     <div className="mx-auto max-w-4xl animate-fade-in">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex items-center gap-4">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-indigo-500/15 text-indigo-300 ring-1 ring-inset ring-white/10">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-accent/10 text-accent">
             <Icon name="users" size={26} />
           </div>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">{guild.name}</h1>
             <button
               onClick={copyInvite}
-              className="mt-1 inline-flex items-center gap-1.5 rounded-lg text-sm font-medium text-navy-400 transition-colors hover:text-indigo-300"
+              className="mt-1 inline-flex items-center gap-1.5 rounded-lg text-sm font-medium text-ink-muted transition-colors hover:text-accent"
             >
               {inviteCopied ? (
                 <>
-                  <Icon name="check" size={15} className="text-signal-success" />
-                  <span className="text-signal-success">Copied</span>
+                  <Icon name="check" size={15} className="text-success" />
+                  <span className="text-success">Copied</span>
                 </>
               ) : (
                 <>
@@ -141,7 +168,7 @@ export default function GuildHome() {
                 <section>
                   <div className="mb-3 flex items-center justify-between">
                     <h3 className="text-base font-semibold">Members</h3>
-                    <span className="text-xs font-medium uppercase tracking-wider text-navy-500">
+                    <span className="text-xs font-medium uppercase tracking-wider text-ink-muted">
                       Leaderboard
                     </span>
                   </div>
@@ -152,13 +179,13 @@ export default function GuildHome() {
                         <Avatar src={entry.user.avatar_url} name={entry.user.name} size="md" />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-medium">{entry.user.name}</p>
-                          <p className="text-xs text-navy-400">
+                          <p className="text-xs text-ink-muted">
                             {entry.quizCount} quizzes · {formatAccuracy(entry.totalCorrect, entry.totalQuestions)}
                           </p>
                         </div>
-                        <span className="text-sm font-semibold tabular-nums text-indigo-300">
+                        <span className="text-sm font-semibold tabular-nums text-accent">
                           {entry.totalXP}
-                          <span className="ml-1 text-xs font-medium text-navy-500">XP</span>
+                          <span className="ml-1 text-xs font-medium text-ink-muted">XP</span>
                         </span>
                       </Card>
                     ))}
@@ -174,7 +201,7 @@ export default function GuildHome() {
             {activeTab === "activity" && (
               <div className="space-y-2.5 animate-fade-in">
                 {attempts.length === 0 ? (
-                  <Card className="py-10 text-center text-sm text-navy-400">
+                  <Card className="py-10 text-center text-sm text-ink-muted">
                     No activity yet. Start a quiz!
                   </Card>
                 ) : (
@@ -187,12 +214,12 @@ export default function GuildHome() {
                           <div className="min-w-0 flex-1">
                             <p className="text-sm leading-snug">
                               <span className="font-medium">{m?.name}</span>{" "}
-                              <span className="text-navy-400">completed</span>{" "}
-                              <span className="text-navy-200">
+                              <span className="text-ink-muted">completed</span>{" "}
+                              <span className="text-ink">
                                 Form {a.form} {a.subject} · Ch.{a.chapter_number}
                               </span>
                             </p>
-                            <p className="mt-0.5 flex items-center gap-2 text-xs text-navy-500">
+                            <p className="mt-0.5 flex items-center gap-2 text-xs text-ink-muted">
                               <span className="inline-flex items-center gap-1">
                                 <Icon name="timer" size={13} />
                                 {formatTime(a.time_taken_seconds)}
@@ -222,17 +249,17 @@ export default function GuildHome() {
 function RankBadge({ rank }: { rank: number }) {
   if (rank === 0) {
     return (
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-300 to-yellow-500 text-navy-950 shadow-card">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-400 text-ink shadow-card">
         <Icon name="crown" size={16} strokeWidth={2.25} />
       </div>
     );
   }
   const styles =
     rank === 1
-      ? "bg-slate-300/20 text-slate-200 ring-slate-300/40"
+      ? "bg-line text-ink-soft ring-line-strong"
       : rank === 2
-        ? "bg-orange-400/15 text-orange-300 ring-orange-400/40"
-        : "bg-navy-800 text-navy-400 ring-navy-700";
+        ? "bg-orange-500/10 text-orange-700 ring-orange-500/30"
+        : "bg-wash text-ink-muted ring-line-strong";
   return (
     <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold tabular-nums ring-1 ${styles}`}>
       {rank + 1}
@@ -290,7 +317,7 @@ function RankingsTab({
             }}
             aria-pressed={subject === s}
             className={`rounded-full px-4 py-2 text-sm font-medium transition-all
-              ${subject === s ? "bg-indigo-500 text-white shadow-card" : "bg-navy-800 text-navy-300 hover:bg-navy-700 hover:text-navy-100"}`}
+              ${subject === s ? "bg-accent text-white shadow-card" : "bg-wash text-ink-soft hover:bg-line hover:text-ink"}`}
           >
             {s}
           </button>
@@ -302,7 +329,7 @@ function RankingsTab({
           <select
             value={chapterNum ?? ""}
             onChange={(e) => setChapterNum(e.target.value ? Number(e.target.value) : null)}
-            className="rounded-xl border border-navy-700 bg-navy-850 px-3.5 py-2 text-sm text-navy-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/25"
+            className="rounded-xl border border-line-strong bg-surface px-3.5 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-accent/20"
           >
             <option value="">All chapters</option>
             {chapters.map((c) => (
@@ -318,7 +345,7 @@ function RankingsTab({
               onClick={() => setDifficulty(difficulty === d ? null : d)}
               aria-pressed={difficulty === d}
               className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all
-                ${difficulty === d ? "bg-white text-navy-950" : "bg-navy-800 text-navy-300 hover:bg-navy-700"}`}
+                ${difficulty === d ? "bg-ink text-white" : "bg-wash text-ink-soft hover:bg-line"}`}
             >
               {d}
             </button>
@@ -327,7 +354,7 @@ function RankingsTab({
       </div>
 
       {ranked.length === 0 ? (
-        <Card className="py-10 text-center text-sm text-navy-400">
+        <Card className="py-10 text-center text-sm text-ink-muted">
           No data for this selection yet
         </Card>
       ) : (
@@ -339,7 +366,7 @@ function RankingsTab({
               <Card
                 key={entry.userId}
                 className={`flex items-center gap-3 p-3.5 ${
-                  isMe ? "border-indigo-500/40 bg-indigo-500/10" : ""
+                  isMe ? "border-accent/40 bg-accent/10" : ""
                 }`}
               >
                 <RankBadge rank={i} />
@@ -347,15 +374,15 @@ function RankingsTab({
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">
                     {m?.name}
-                    {isMe ? <span className="ml-2 text-xs font-medium text-indigo-300">You</span> : null}
+                    {isMe ? <span className="ml-2 text-xs font-medium text-accent">You</span> : null}
                   </p>
-                  <p className="text-xs text-navy-400">
+                  <p className="text-xs text-ink-muted">
                     {entry.attempts} attempts · {formatAccuracy(entry.correct, entry.attempts * 10)}
                   </p>
                 </div>
-                <span className="text-sm font-semibold tabular-nums text-indigo-300">
+                <span className="text-sm font-semibold tabular-nums text-accent">
                   {entry.xp}
-                  <span className="ml-1 text-xs font-medium text-navy-500">XP</span>
+                  <span className="ml-1 text-xs font-medium text-ink-muted">XP</span>
                 </span>
               </Card>
             );
@@ -367,7 +394,7 @@ function RankingsTab({
 }
 
 const SELECT_STYLE =
-  "rounded-xl border border-navy-700 bg-navy-850 px-3.5 py-2 text-sm text-navy-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/25";
+  "rounded-xl border border-line-strong bg-surface px-3.5 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-accent/20";
 
 function HistoryTab({
   members,
@@ -412,18 +439,18 @@ function HistoryTab({
                     <p className="truncate text-sm font-medium">
                       Form {a.form} {a.subject} · Ch.{a.chapter_number}: {a.chapter_name}
                     </p>
-                    <p className="mt-0.5 text-xs text-navy-500">
+                    <p className="mt-0.5 text-xs text-ink-muted">
                       {new Date(a.completed_at).toLocaleDateString()} · {formatTime(a.time_taken_seconds)}
                     </p>
                   </div>
                   <Badge className={DIFFICULTY_COLORS[a.difficulty]}>{a.difficulty}</Badge>
-                  <span className="text-sm font-semibold tabular-nums text-navy-200">
+                  <span className="text-sm font-semibold tabular-nums text-ink">
                     {a.correct_answers}/{a.total_questions}
                   </span>
                   <Icon
                     name="chevron-down"
                     size={16}
-                    className={`shrink-0 text-navy-500 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                    className={`shrink-0 text-ink-muted transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
                   />
                 </div>
               </Card>
@@ -432,10 +459,10 @@ function HistoryTab({
                   {a.questions_data.map((q, qi) => (
                     <div
                       key={qi}
-                      className="rounded-2xl border border-navy-800 bg-navy-850/60 p-4"
+                      className="rounded-2xl border border-line bg-wash/60 p-4"
                     >
                       <p className="text-sm font-medium leading-relaxed">
-                        <span className="mr-1.5 text-navy-500">Q{qi + 1}.</span>
+                        <span className="mr-1.5 text-ink-muted">Q{qi + 1}.</span>
                         {q.question}
                       </p>
                       <div className="mt-2 space-y-1">
@@ -446,10 +473,10 @@ function HistoryTab({
                             <p
                               key={oi}
                               className={`flex items-start gap-2 rounded-lg px-2 py-1 text-[13px] leading-snug ${
-                                isRight ? "bg-signal-success/10 text-signal-success" : isWrong ? "bg-signal-danger/10 text-signal-danger" : "text-navy-400"
+                                isRight ? "bg-success/10 text-success" : isWrong ? "bg-danger/10 text-danger" : "text-ink-muted"
                               }`}
                             >
-                              <span className="mt-px flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-navy-800 text-[10px] font-semibold">
+                              <span className="mt-px flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-wash text-[10px] font-semibold text-ink-muted">
                                 {String.fromCharCode(65 + oi)}
                               </span>
                               <span className="min-w-0 flex-1">{opt}</span>
@@ -459,7 +486,7 @@ function HistoryTab({
                           );
                         })}
                       </div>
-                      <p className="mt-2.5 border-t border-navy-800 pt-2.5 text-xs italic leading-relaxed text-navy-500">
+                      <p className="mt-2.5 border-t border-line pt-2.5 text-xs italic leading-relaxed text-ink-muted">
                         {q.explanation}
                       </p>
                     </div>
@@ -470,7 +497,7 @@ function HistoryTab({
           );
         })}
         {filtered.length === 0 && (
-          <Card className="py-10 text-center text-sm text-navy-400">No quiz history yet</Card>
+          <Card className="py-10 text-center text-sm text-ink-muted">No quiz history yet</Card>
         )}
       </div>
     </div>

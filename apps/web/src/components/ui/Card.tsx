@@ -12,7 +12,7 @@ export function Card({ children, className = "", hover = false, onClick }: CardP
     <div
       onClick={onClick}
       className={`surface-card
-        ${hover ? "cursor-pointer transition-all duration-200 hover:border-navy-700 hover:bg-navy-800 active:scale-[0.995]" : ""}
+        ${hover ? "cursor-pointer transition-all duration-200 hover:border-line-strong hover:bg-wash active:scale-[0.995]" : ""}
         ${onClick ? "cursor-pointer" : ""}
         ${className}`}
     >

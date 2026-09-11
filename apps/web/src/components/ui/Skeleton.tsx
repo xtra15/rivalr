@@ -11,10 +11,10 @@ export function Skeleton({ className = "" }: SkeletonProps) {
 
 export function LoadingScreen({ label = "Loading…" }: { label?: string }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-navy-900">
+    <div className="flex min-h-screen items-center justify-center bg-paper">
       <div className="flex flex-col items-center gap-4">
-        <div className="h-9 w-9 animate-spin rounded-full border-2 border-navy-700 border-t-indigo-400" />
-        <p className="text-sm text-navy-500">{label}</p>
+        <div className="h-9 w-9 animate-spin rounded-full border-2 border-line-strong border-t-accent" />
+        <p className="text-sm text-ink-faint">{label}</p>
       </div>
     </div>
   );
@@ -28,11 +28,11 @@ interface StatCardProps {
 }
 
 const tintIcon = {
-  default: "bg-navy-800 text-navy-300",
-  accent: "bg-indigo-500/15 text-indigo-300",
-  success: "bg-signal-success/15 text-signal-success",
-  danger: "bg-signal-danger/15 text-signal-danger",
-  warning: "bg-signal-warning/15 text-signal-warning",
+  default: "bg-wash text-ink-muted",
+  accent: "bg-accent/10 text-accent",
+  success: "bg-success/10 text-success",
+  danger: "bg-danger/10 text-danger",
+  warning: "bg-warning/10 text-warning",
 };
 
 export function StatCard({ label, value, icon, tint = "default" }: StatCardProps) {
@@ -43,10 +43,10 @@ export function StatCard({ label, value, icon, tint = "default" }: StatCardProps
           <Icon name={icon} size={18} />
         </div>
       ) : (
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-navy-400">{label}</p>
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-muted">{label}</p>
       )}
       <p className="text-2xl font-bold tabular-nums tracking-tight">{value}</p>
-      {icon ? <p className="mt-0.5 text-xs font-medium uppercase tracking-wider text-navy-400">{label}</p> : null}
+      {icon ? <p className="mt-0.5 text-xs font-medium uppercase tracking-wider text-ink-muted">{label}</p> : null}
     </div>
   );
 }
@@ -64,7 +64,7 @@ export function PageHeader({
     <div className="mb-8 flex items-end justify-between gap-4">
       <div>
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{title}</h1>
-        {subtitle ? <p className="mt-1.5 text-[15px] text-navy-400">{subtitle}</p> : null}
+        {subtitle ? <p className="mt-1.5 text-[15px] text-ink-muted">{subtitle}</p> : null}
       </div>
       {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
     </div>
@@ -84,11 +84,11 @@ export function EmptyState({
 }) {
   return (
     <div className="surface-card flex flex-col items-center justify-center px-6 py-14 text-center">
-      <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-navy-800 text-navy-400">
+      <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-wash text-ink-muted">
         <Icon name={icon} size={26} />
       </div>
       <p className="text-base font-semibold">{title}</p>
-      {description ? <p className="mt-1 max-w-sm text-sm text-navy-400">{description}</p> : null}
+      {description ? <p className="mt-1 max-w-sm text-sm text-ink-muted">{description}</p> : null}
       {action ? <div className="mt-5">{action}</div> : null}
     </div>
   );

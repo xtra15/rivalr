@@ -71,7 +71,7 @@ export default function Profile() {
       <div className="mb-7">
         <div className="mb-2 flex items-baseline justify-between">
           <span className="text-sm font-semibold">Level {level.level}</span>
-          <span className="text-xs tabular-nums text-navy-500">
+          <span className="text-xs tabular-nums text-ink-muted">
             {level.currentXP}/{level.nextLevelXP} XP
           </span>
         </div>
@@ -88,7 +88,7 @@ export default function Profile() {
       <h2 className="mb-3 text-base font-semibold">Subject Breakdown</h2>
       <div className="mb-8 space-y-2.5">
         {subjectStats.length === 0 ? (
-          <Card className="py-8 text-center text-sm text-navy-400">No quiz data yet</Card>
+          <Card className="py-8 text-center text-sm text-ink-muted">No quiz data yet</Card>
         ) : (
           subjectStats.map((s) => {
             const accuracy = formatAccuracy(s.correct_answers, s.total_questions);
@@ -97,19 +97,19 @@ export default function Profile() {
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{s.subject}</p>
-                    <p className="text-xs text-navy-500">
+                    <p className="text-xs text-ink-muted">
                       {s.quizzes_completed} quizzes · Best streak {s.best_streak}
                     </p>
                   </div>
                   <div className="shrink-0 text-right">
-                    <p className="text-sm font-semibold tabular-nums text-indigo-300">
+                    <p className="text-sm font-semibold tabular-nums text-accent">
                       {s.xp_earned}
-                      <span className="ml-1 text-xs font-medium text-navy-500">XP</span>
+                      <span className="ml-1 text-xs font-medium text-ink-muted">XP</span>
                     </p>
-                    <p className="text-xs tabular-nums text-navy-400">{accuracy}</p>
+                    <p className="text-xs tabular-nums text-ink-muted">{accuracy}</p>
                   </div>
                 </div>
-                <ProgressBar value={s.correct_answers} max={Math.max(1, s.total_questions)} color="bg-signal-success" />
+                <ProgressBar value={s.correct_answers} max={Math.max(1, s.total_questions)} color="bg-success" />
               </Card>
             );
           })
@@ -127,15 +127,15 @@ export default function Profile() {
         <div className="grid grid-cols-2 gap-2.5">
           {achievements.map((a) => (
             <Card key={a.achievement_id} className="flex items-center gap-3 p-3.5">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-indigo-500/15 text-indigo-300 ring-1 ring-inset ring-white/5">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent/10 text-accent">
                 <Icon name={achievementIcon(a.achievement.name)} size={21} />
               </div>
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium">{a.achievement.name}</p>
                 {a.achievement.description ? (
-                  <p className="truncate text-xs text-navy-400">{a.achievement.description}</p>
+                  <p className="truncate text-xs text-ink-muted">{a.achievement.description}</p>
                 ) : null}
-                <p className="text-[11px] text-navy-500">
+                <p className="text-[11px] text-ink-muted">
                   {new Date(a.unlocked_at).toLocaleDateString()}
                 </p>
               </div>

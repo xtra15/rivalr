@@ -61,8 +61,8 @@ export function formatAccuracy(correct: number, total: number): string {
 }
 
 export const DIFFICULTY_COLORS: Record<string, string> = {
-  Easy: "text-green-400 bg-green-400/10",
-  Medium: "text-yellow-400 bg-yellow-400/10",
-  Hard: "text-orange-400 bg-orange-400/10",
-  KBAT: "text-red-400 bg-red-400/10",
+  Easy: "border-success/25 bg-success/10 text-success",
+  Medium: "border-warning/25 bg-warning/10 text-warning",
+  Hard: "border-orange-600/25 bg-orange-600/10 text-orange-700",
+  KBAT: "border-danger/25 bg-danger/10 text-danger",
 };

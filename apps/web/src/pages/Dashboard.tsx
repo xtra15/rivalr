@@ -173,7 +173,7 @@ export default function Dashboard() {
             />
           </div>
           {joinError ? (
-            <p className="text-sm text-signal-danger sm:basis-full sm:-mt-2">{joinError}</p>
+            <p className="text-sm text-danger sm:basis-full sm:-mt-2">{joinError}</p>
           ) : null}
           <div className="flex gap-2 sm:pt-6">
             <Button size="md" type="submit" disabled={busy || !inviteCode.trim()}>
@@ -209,7 +209,7 @@ export default function Dashboard() {
           {guilds.map((guild) => (
             <Link key={guild.id} to={`/guild/${guild.id}`} className="group">
               <Card hover className="flex items-center gap-4 p-5">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-navy-800 text-indigo-300 ring-1 ring-inset ring-white/5">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-wash text-accent">
                   <Icon name="users" size={22} />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -221,7 +221,7 @@ export default function Dashboard() {
                 <Icon
                   name="chevron-right"
                   size={18}
-                  className="text-navy-600 transition-all group-hover:translate-x-0.5 group-hover:text-navy-300"
+                  className="text-ink-faint transition-all group-hover:translate-x-0.5 group-hover:text-ink-soft"
                 />
               </Card>
             </Link>

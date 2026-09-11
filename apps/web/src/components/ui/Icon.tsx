@@ -211,7 +211,6 @@ export function Icon({
 }
 
 export function LogoMark({ size = 32, className = "" }: { size?: number; className?: string }) {
-  const id = `rv-grad-${size}`;
   return (
     <svg
       width={size}
@@ -221,13 +220,7 @@ export function LogoMark({ size = 32, className = "" }: { size?: number; classNa
       aria-hidden="true"
       focusable="false"
     >
-      <defs>
-        <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#818cf8" />
-          <stop offset="1" stopColor="#4f46e5" />
-        </linearGradient>
-      </defs>
-      <rect width="512" height="512" rx="128" fill={`url(#${id})`} />
+      <rect width="512" height="512" rx="128" fill="#1d4ed8" />
       <path d="M284 96 L176 288 h72 l-20 128 l112 -200 h-72 z" fill="#ffffff" />
     </svg>
   );

@@ -4,23 +4,23 @@
 
 @layer base {
   html {
-    color-scheme: dark;
+    color-scheme: light;
   }
 
   body {
-    @apply bg-navy-900 text-white antialiased;
+    @apply bg-paper text-ink antialiased;
   }
 
   * {
-    @apply border-navy-800;
+    @apply border-line;
   }
 
   ::selection {
-    @apply bg-indigo-500/30 text-white;
+    @apply bg-accent/20 text-ink;
   }
 
   :focus-visible {
-    outline: 2px solid theme("colors.indigo.400");
+    outline: 2px solid theme("colors.accent.DEFAULT");
     outline-offset: 2px;
   }
 
@@ -38,10 +38,10 @@
 
 @layer components {
   .skeleton {
-    @apply animate-pulse rounded-2xl bg-navy-800;
+    @apply animate-pulse rounded-2xl bg-line;
   }
 
   .surface-card {
-    @apply rounded-2xl border border-navy-800 bg-navy-850 shadow-card;
+    @apply rounded-2xl border border-line bg-surface shadow-card;
   }
 }
