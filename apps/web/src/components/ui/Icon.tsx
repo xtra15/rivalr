@@ -170,6 +170,13 @@ const PATHS: Record<string, ReactNode> = {
     </>
   ),
   zap: <path d="M13 2 4.5 13.5H11l-1 8.5 8.5-11.5H12l1-8.5z" />,
+  trash: (
+    <>
+      <path d="M3 6h18" />
+      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+    </>
+  ),
 };
 
 export type IconName = keyof typeof PATHS;

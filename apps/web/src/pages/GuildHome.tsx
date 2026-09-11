@@ -17,6 +17,7 @@ import {
   useToast,
 } from "@/components/ui";
 import { formatAccuracy, formatTime, getLevel } from "@/utils/format";
+import { GuildSettings } from "@/components/GuildSettings";
 import type { Guild, User, QuizAttempt, UserChapterStats } from "@rivalr/shared";
 
 export default function GuildHome() {
@@ -156,6 +157,8 @@ export default function GuildHome() {
           </Link>
         </div>
       </div>
+
+      <GuildSettings guildId={guildId!} guildName={guild.name} createdBy={guild.created_by} />
 
       <div className="mb-6 flex flex-wrap gap-2">
         <StatPill value={String(members.length)} label={members.length === 1 ? "member" : "members"} />
