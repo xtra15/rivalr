@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { firestore } from "@/lib/firestore";
-import { Card, Icon, Input, Button, StatCard, PageHeader, EmptyState } from "@/components/ui";
+import { Card, Icon, Input, Button, StatCard, PageHeader, EmptyState, ProgressBar } from "@/components/ui";
 import { getLevel, formatCoins } from "@/utils/format";
 import type { Guild } from "@rivalr/shared";
 
@@ -99,7 +99,17 @@ export default function Dashboard() {
         <StatCard label="Guilds" value={guilds.length} icon="users" />
         <StatCard label="Total XP" value={user?.xp ?? 0} icon="zap" tint="accent" />
         <StatCard label="Coins" value={formatCoins(user?.coins ?? 0)} icon="coin" tint="warning" />
-        <StatCard label="Level" value={level.level} icon="star" tint="success" />
+        <div className="surface-card p-4">
+              <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-success/10 text-success">
+                <Icon name="star" size={18} />
+              </div>
+              <p className="text-2xl font-bold tabular-nums tracking-tight">{level.level}</p>
+              <p className="mt-0.5 text-[11px] font-medium uppercase tracking-wider text-ink-muted">Level</p>
+              <div className="mt-3">
+                <ProgressBar value={level.currentXP} max={level.nextLevelXP} color="bg-success" />
+              </div>
+              <p className="mt-1 text-[10px] tabular-nums text-ink-muted">{level.currentXP}/{level.nextLevelXP} XP</p>
+            </div>
       </div>
 
       <div className="mb-4 flex items-center justify-between">
