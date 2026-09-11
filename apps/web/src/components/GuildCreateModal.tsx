@@ -30,7 +30,7 @@ export function GuildCreateModal({ open, onClose, onCreated }: GuildCreateModalP
       const guild = await firestore.guilds.create({
         name: trimmed,
         invite_code: code,
-        created_by: user.id,
+        created_by: user.google_id,
         description: description.trim(),
         icon,
       });

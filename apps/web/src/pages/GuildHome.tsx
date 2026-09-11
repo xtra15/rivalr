@@ -155,7 +155,7 @@ export default function GuildHome() {
         </div>
         <div className="flex items-center gap-3">
           <LiveBadge />
-          {user?.id === guild.created_by ? (
+          {user?.google_id === guild.created_by ? (
             <button
               onClick={() => setShowSettings((s) => !s)}
               aria-label="Guild settings"

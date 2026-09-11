@@ -31,7 +31,7 @@ export function GuildSettings({
   const [saved, setSaved] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const isCreator = user?.id === createdBy;
+  const isCreator = user?.google_id === createdBy;
   const trimmed = name.trim();
   const nameValid = trimmed.length >= 2 && trimmed.length <= 40;
   const dirty = trimmed !== guildName || description !== guildDescription || icon !== guildIcon;
