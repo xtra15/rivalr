@@ -17,7 +17,7 @@ export function Layout() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-paper">
+    <div className="flex min-h-screen flex-col bg-field">
       <Navbar />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-24 pt-8 sm:px-6 md:pb-12">
         <Outlet />
