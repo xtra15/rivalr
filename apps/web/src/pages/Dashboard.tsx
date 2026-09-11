@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { firestore } from "@/lib/firestore";
-import { Card, Icon, Input, Button, StatCard, PageHeader, EmptyState, ProgressBar } from "@/components/ui";
+import { Card, Icon, Input, Button, StatCard, EmptyState, ProgressBar } from "@/components/ui";
 import { getLevel, formatCoins } from "@/utils/format";
 import type { Guild } from "@rivalr/shared";
 
@@ -90,26 +90,34 @@ export default function Dashboard() {
 
   return (
     <div className="mx-auto max-w-4xl">
-      <PageHeader
-        title={`Welcome back, ${user?.name?.split(" ")[0]}`}
-        subtitle="Your study dashboard"
-      />
+      <div className="mb-6 flex items-end justify-between gap-4">
+        <div>
+          <p className="eyebrow text-ink-muted">Player</p>
+          <h1 className="font-display text-3xl uppercase tracking-wide sm:text-4xl">
+            {user?.name?.split(" ")[0] ?? "—"}
+          </h1>
+        </div>
+        <div className="flex items-center gap-2 rounded-md border border-line bg-panel px-3 py-1.5">
+          <span className="h-2 w-2 animate-pulse-soft rounded-full bg-volt" />
+          <span className="eyebrow text-volt">Live</span>
+        </div>
+      </div>
 
       <div className="surface-card mb-6 flex flex-col gap-4 p-5 sm:p-6">
         <div className="flex items-center gap-4 sm:gap-5">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-success/10 text-success">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-volt/10 text-volt">
             <Icon name="star" size={28} />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-muted">Level</p>
-            <p className="text-3xl font-bold tracking-tight sm:text-4xl">{level.level}</p>
+            <p className="eyebrow text-ink-muted">Level</p>
+            <p className="font-display text-3xl uppercase tracking-wide text-ink sm:text-4xl">{level.level}</p>
           </div>
           <div className="shrink-0 text-right">
-            <p className="text-2xl font-bold tabular-nums tracking-tight sm:text-3xl">{level.currentXP}</p>
+            <p className="font-display text-2xl tracking-wide tabular-nums text-volt sm:text-3xl">{level.currentXP}</p>
             <p className="text-sm text-ink-muted">of {level.nextLevelXP} XP</p>
           </div>
         </div>
-        <ProgressBar value={level.currentXP} max={level.nextLevelXP} color="bg-success" />
+        <ProgressBar value={level.currentXP} max={level.nextLevelXP} />
       </div>
 
       <div className="mb-9 grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -121,7 +129,7 @@ export default function Dashboard() {
       </div>
 
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold tracking-tight">Your Guilds</h2>
+        <h2 className="font-display text-xl uppercase tracking-wide">Your Guilds</h2>
         <div className="flex gap-2">
           <Button size="sm" onClick={() => setShowCreate(true)}>
             <Icon name="plus" size={16} />
@@ -227,19 +235,19 @@ export default function Dashboard() {
           {guilds.map((guild) => (
             <Link key={guild.id} to={`/guild/${guild.id}`} className="group">
               <Card hover className="flex items-center gap-4 p-5">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-wash text-accent">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-overpanel text-volt">
                   <Icon name="users" size={22} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <h3 className="truncate font-semibold">{guild.name}</h3>
-                  <p className="mt-0.5 text-sm text-navy-400">
+                  <p className="mt-0.5 text-sm text-ink-muted">
                     {guild.member_count} member{guild.member_count === 1 ? "" : "s"}
                   </p>
                 </div>
                 <Icon
                   name="chevron-right"
                   size={18}
-                  className="text-ink-faint transition-all group-hover:translate-x-0.5 group-hover:text-ink-soft"
+                  className="text-ink-muted transition-all group-hover:translate-x-0.5 group-hover:text-volt"
                 />
               </Card>
             </Link>
