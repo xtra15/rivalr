@@ -15,6 +15,7 @@ import {
   type IconName,
 } from "@/components/ui";
 import { getLevel, formatAccuracy, formatCoins } from "@/utils/format";
+import { CustomTauntManager } from "@/components/CustomTauntManager";
 import type { UserSubjectStats, UserAchievement, ShopItem } from "@rivalr/shared";
 
 interface EnrichedAchievement {
@@ -170,7 +171,7 @@ export default function Profile() {
                 {activeTab === "achievements" && (
                   <AchievementsTab achievements={achievements} locked={locked} />
                 )}
-                {activeTab === "equipped" && <EquippedTab equipped={equipped} />}
+                {activeTab === "equipped" && <EquippedTab equipped={equipped} onChanged={() => loadData()} />}
               </>
             )}
           </Tabs>
@@ -283,10 +284,17 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 const ALL_CATEGORIES = ["avatar_frame", "name_glow", "title", "taunt", "quiz_theme", "sound_effect"] as const;
 
-function EquippedTab({ equipped }: { equipped: { item: ShopItem; purchased_at: string }[] }) {
+function EquippedTab({
+  equipped,
+  onChanged,
+}: {
+  equipped: { item: ShopItem; purchased_at: string }[];
+  onChanged?: () => void;
+}) {
   const byCat = new Map(equipped.map((e) => [e.item.category, e]));
   return (
     <div className="space-y-2.5 animate-fade-in">
+      <CustomTauntManager onChanged={onChanged} />
       {ALL_CATEGORIES.map((cat) => {
         const entry = byCat.get(cat);
         const icon: IconName =

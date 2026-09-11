@@ -63,6 +63,11 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    match /user_custom_taunts/{userId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if request.auth.uid == userId;
+    }
+
     match /achievements/{id} {
       allow read: if isSignedIn();
       allow create, update, delete: if false;

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { firestore } from "@/lib/firestore";
 import { Card, Button, Tabs, Icon, CoinBalance, useToast } from "@/components/ui";
+import { CustomTauntManager } from "@/components/CustomTauntManager";
 import { formatCoins } from "@/utils/format";
 import type { ShopItem } from "@rivalr/shared";
 
@@ -141,6 +142,7 @@ export default function Shop() {
           }))}
         >
           {(activeCat) => (
+          <>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 animate-fade-in">
               {items
                 .filter((i) => i.category === activeCat || categories.length === 1)
@@ -187,7 +189,13 @@ export default function Shop() {
                   );
                 })}
             </div>
-          )}
+            {activeCat === "taunt" ? (
+              <div className="mt-3 animate-fade-in">
+                <CustomTauntManager />
+              </div>
+            ) : null}
+          </>
+        )}
         </Tabs>
       )}
     </div>
