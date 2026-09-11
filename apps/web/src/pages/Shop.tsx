@@ -119,7 +119,7 @@ export default function Shop() {
         categories.map((cat) => (
           <section key={cat} className="mb-9">
             <div className="mb-3 flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-wash text-accent">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-overpanel text-volt">
                 <Icon name={CATEGORY_ICONS[cat] ?? "bag"} size={16} />
               </div>
               <h2 className="text-base font-semibold">{CATEGORY_LABELS[cat] ?? cat}</h2>
@@ -137,7 +137,7 @@ export default function Shop() {
                       <div className="mb-1 flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="font-medium text-sm">{item.name}</p>
-                          <p className="mt-0.5 text-xs leading-relaxed text-navy-400">{item.description}</p>
+                          <p className="mt-0.5 text-xs leading-relaxed text-ink-muted">{item.description}</p>
                         </div>
                         {cat === "taunt" && item.preview_data ? (
                           <span className="shrink-0 text-2xl leading-none">{item.preview_data}</span>

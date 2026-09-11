@@ -63,14 +63,14 @@ export default function Profile() {
       <div className="mb-8 flex items-center gap-5">
         <Avatar src={user.avatar_url} name={user.name} size="xl" />
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold tracking-tight">{user.name}</h1>
-          <p className="text-sm text-navy-400">{user.email}</p>
+          <h1 className="font-display text-2xl uppercase tracking-wide">{user.name}</h1>
+          <p className="text-sm text-ink-muted">{user.email}</p>
         </div>
       </div>
 
       <div className="mb-7">
         <div className="mb-2 flex items-baseline justify-between">
-          <span className="text-sm font-semibold">Level {level.level}</span>
+          <span className="font-display text-sm uppercase tracking-wide text-ink">Level {level.level}</span>
           <span className="text-xs tabular-nums text-ink-muted">
             {level.currentXP}/{level.nextLevelXP} XP
           </span>
@@ -96,13 +96,13 @@ export default function Profile() {
               <Card key={s.subject} className="p-5">
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{s.subject}</p>
+                    <p className="truncate text-sm font-medium text-ink-soft">{s.subject}</p>
                     <p className="text-xs text-ink-muted">
                       {s.quizzes_completed} quizzes · Best streak {s.best_streak}
                     </p>
                   </div>
                   <div className="shrink-0 text-right">
-                    <p className="text-sm font-semibold tabular-nums text-accent">
+                    <p className="font-display text-sm tracking-wide tabular-nums text-volt">
                       {s.xp_earned}
                       <span className="ml-1 text-xs font-medium text-ink-muted">XP</span>
                     </p>
@@ -127,7 +127,7 @@ export default function Profile() {
         <div className="grid grid-cols-2 gap-2.5">
           {achievements.map((a) => (
             <Card key={a.achievement_id} className="flex items-center gap-3 p-3.5">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent/10 text-accent">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-volt/10 text-volt">
                 <Icon name={achievementIcon(a.achievement.name)} size={21} />
               </div>
               <div className="min-w-0">
