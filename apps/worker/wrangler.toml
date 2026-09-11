@@ -5,3 +5,10 @@ compatibility_date = "2024-12-01"
 [[kv_namespaces]]
 binding = "QUESTIONS_KV"
 id = "5836122b8d14453882e61e8256717819"
+
+[[r2_buckets]]
+binding = "TAUNTS_R2"
+bucket_name = "rivalr-taunts"
+
+[vars]
+FIREBASE_PROJECT_ID = "rivalr-f5436"
