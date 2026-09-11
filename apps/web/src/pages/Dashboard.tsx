@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { firestore } from "@/lib/firestore";
-import { Card, Icon, Input, Button, StatPill, EmptyState, ProgressBar, useToast } from "@/components/ui";
+import { Card, Icon, Input, Button, StatPill, EmptyState, ProgressBar, LiveBadge, useToast } from "@/components/ui";
 import { getLevel, formatCoins } from "@/utils/format";
 import type { Guild } from "@rivalr/shared";
 
@@ -102,8 +102,7 @@ export default function Dashboard() {
           </h1>
         </div>
         <div className="flex items-center gap-2 rounded-md border border-line bg-panel px-3 py-1.5">
-          <span className="h-2 w-2 animate-pulse-soft rounded-full bg-volt" />
-          <span className="eyebrow text-volt">Live</span>
+          <LiveBadge />
         </div>
       </div>
 

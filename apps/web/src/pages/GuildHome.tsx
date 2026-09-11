@@ -11,6 +11,7 @@ import {
   SubjectPill,
   DifficultyBadge,
   ChapterBadge,
+  LiveBadge,
   Icon,
   Button,
   useToast,
@@ -146,10 +147,7 @@ export default function GuildHome() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 rounded-md border border-line bg-field px-3 py-1.5">
-            <span className="h-2 w-2 animate-pulse-soft rounded-full bg-volt" />
-            <span className="eyebrow text-volt">Live</span>
-          </div>
+          <LiveBadge />
           <Link to={`/guild/${guildId}/quiz`}>
             <Button size="lg" className="w-full sm:w-auto">
               <Icon name="play" size={17} fill />
