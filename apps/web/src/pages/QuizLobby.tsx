@@ -55,6 +55,7 @@ export default function QuizLobby() {
 
       const attempt = await firestore.quizAttempts.create({
         user_id: user.id,
+        uid: user.google_id,
         guild_id: guildId,
         form,
         subject,
