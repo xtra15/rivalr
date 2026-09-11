@@ -12,3 +12,4 @@ bucket_name = "rivalr-taunts"
 
 [vars]
 FIREBASE_PROJECT_ID = "rivalr-f5436"
+R2_MAX_TOTAL_BYTES = "134217728"

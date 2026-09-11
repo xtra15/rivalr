@@ -1,6 +1,7 @@
 import type { Env } from "../types";
 import { verifyFirebaseToken } from "../lib/verify";
 import { validateWebP } from "../lib/webp";
+import { applyR2Bytes } from "../lib/quota";
 
 const MAX_BYTES = 512 * 1024;
 
@@ -22,7 +23,9 @@ export async function handleTaunts(request: Request, env: Env, path: string): Pr
 
   if (request.method === "DELETE") {
     const listed = await env.TAUNTS_R2.list({ prefix: `taunts/${uid}/` });
+    const removedBytes = listed.objects.reduce((acc, o) => acc + o.size, 0);
     await Promise.all(listed.objects.map((o) => env.TAUNTS_R2.delete(o.key)));
+    await applyR2Bytes(env, -removedBytes);
     return Response.json({ ok: true });
   }
 
@@ -37,6 +40,14 @@ export async function handleTaunts(request: Request, env: Env, path: string): Pr
     const sha256 = [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
     const assetKey = `taunts/${uid}/${sha256}.webp`;
 
+    const existing = await env.TAUNTS_R2.list({ prefix: `taunts/${uid}/` });
+    const replacedBytes = existing.objects.reduce((acc, o) => acc + o.size, 0);
+    const quota = await applyR2Bytes(env, bytes.length - replacedBytes);
+    if (!quota.ok) {
+      return Response.json({ error: "Storage quota reached — contact the admin." }, { status: 413 });
+    }
+
+    await Promise.all(existing.objects.map((o) => env.TAUNTS_R2.delete(o.key)));
     await env.TAUNTS_R2.put(assetKey, bytes, {
       httpMetadata: { contentType: "image/webp" },
     });
