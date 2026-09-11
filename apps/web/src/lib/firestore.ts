@@ -31,6 +31,18 @@ function toPlain(obj: DocumentData): Record<string, unknown> {
 }
 
 export const firestore = {
+  adminCheck: {
+    async isAdmin(email: string) {
+      if (!email) return false;
+      try {
+        const snap = await getDoc(doc(db, "admins", email.toLowerCase()));
+        return snap.exists();
+      } catch {
+        return false;
+      }
+    },
+  },
+
   users: {
     async get(googleId: string) {
       const q = query(collection(db, "users"), where("google_id", "==", googleId));

@@ -8,10 +8,7 @@ const navItems: { to: string; label: string; icon: IconName }[] = [
   { to: "/profile", label: "Profile", icon: "user" },
 ];
 
-const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS ?? "")
-  .split(",")
-  .map((email: string) => email.trim().toLowerCase())
-  .filter(Boolean);
+const ADMIN_ENABLED = import.meta.env.VITE_ADMIN_ENABLED === "true";
 
 const TAB_ROUTES = new Set(["/dashboard", "/shop", "/profile"]);
 
@@ -20,13 +17,13 @@ function isActivePath(locationPathname: string, to: string) {
 }
 
 export function Sidebar() {
-  const { user, signOut } = useAuth();
+  const { user, isAdmin, signOut } = useAuth();
   const location = useLocation();
 
   if (!user) return null;
 
   const items = [...navItems];
-  if (ADMIN_EMAILS.length === 0 || ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+  if (ADMIN_ENABLED && isAdmin) {
     items.push({ to: "/admin", label: "Admin", icon: "shield" });
   }
 
@@ -80,14 +77,14 @@ export function Sidebar() {
 }
 
 export function MobileTabBar() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const location = useLocation();
 
   if (!user) return null;
-  if (!TAB_ROUTES.has(location.pathname) && location.pathname !== "/admin") return null;
+  if (location.pathname !== "/admin" && !TAB_ROUTES.has(location.pathname)) return null;
 
   const items = [...navItems];
-  if (ADMIN_EMAILS.length === 0 || ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+  if (ADMIN_ENABLED && isAdmin) {
     items.push({ to: "/admin", label: "Admin", icon: "shield" });
   }
 

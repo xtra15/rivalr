@@ -3,6 +3,7 @@ import { type ButtonHTMLAttributes, forwardRef } from "react";
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "ghost" | "danger";
   size?: "sm" | "md" | "lg";
+  loading?: boolean;
 }
 
 const variants = {
@@ -19,10 +20,11 @@ const sizes = {
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = "primary", size = "md", className = "", disabled, children, ...props }, ref) => (
+  ({ variant = "primary", size = "md", className = "", disabled, loading, children, ...props }, ref) => (
     <button
       ref={ref}
-      disabled={disabled}
+      disabled={disabled || loading}
+      aria-busy={loading || undefined}
       className={`inline-flex items-center justify-center gap-2 rounded-md font-medium transition-all duration-150
         active:scale-[0.98] select-none
         focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2
@@ -30,6 +32,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ${variants[variant]} ${sizes[size]} ${className}`}
       {...props}
     >
+      {loading ? (
+        <span
+          aria-hidden="true"
+          className="h-[1em] w-[1em] animate-spin rounded-full border-2 border-ink/30 border-t-ink"
+        />
+      ) : null}
       {children}
     </button>
   ),

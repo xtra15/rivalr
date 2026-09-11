@@ -1,7 +1,8 @@
+import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/lib/auth";
 import { Layout, BareLayout } from "@/components/layout";
-import { ToastProvider } from "@/components/ui";
+import { ToastProvider, LoadingScreen } from "@/components/ui";
 import Landing from "@/pages/Landing";
 import Dashboard from "@/pages/Dashboard";
 import GuildHome from "@/pages/GuildHome";
@@ -10,7 +11,9 @@ import QuizScreen from "@/pages/QuizScreen";
 import Results from "@/pages/Results";
 import Profile from "@/pages/Profile";
 import Shop from "@/pages/Shop";
-import Admin from "@/pages/Admin";
+
+const ADMIN_ENABLED = import.meta.env.VITE_ADMIN_ENABLED === "true";
+const AdminPage = ADMIN_ENABLED ? lazy(() => import("@/pages/Admin")) : null;
 
 export default function App() {
   return (
@@ -25,7 +28,16 @@ export default function App() {
             <Route path="/guild/:guildId/quiz/:quizId/results" element={<Results />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/shop" element={<Shop />} />
-            <Route path="/admin" element={<Admin />} />
+            {AdminPage ? (
+              <Route
+                path="/admin"
+                element={
+                  <Suspense fallback={<LoadingScreen label="Loading admin…" />}>
+                    <AdminPage />
+                  </Suspense>
+                }
+              />
+            ) : null}
           </Route>
           <Route element={<BareLayout />}>
             <Route path="/guild/:guildId/quiz/:quizId" element={<QuizScreen />} />

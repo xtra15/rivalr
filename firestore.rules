@@ -72,5 +72,12 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow create, update, delete: if false;
     }
+
+    // Admins: each doc id is the admin's email (lowercased).
+    // Only that email can read its own doc, enforced server-side.
+    match /admins/{adminEmail} {
+      allow read: if isSignedIn() && request.auth.token.email == adminEmail;
+      allow create, update, delete: if false;
+    }
   }
 }

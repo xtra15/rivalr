@@ -10,6 +10,7 @@ interface GuildSettingsProps {
   guildDescription?: string;
   guildIcon?: string;
   createdBy: string;
+  onSaved?: (updates: { name: string; description?: string; icon?: string }) => void;
 }
 
 export function GuildSettings({
@@ -18,6 +19,7 @@ export function GuildSettings({
   guildDescription = "",
   guildIcon = "target",
   createdBy,
+  onSaved,
 }: GuildSettingsProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -26,6 +28,7 @@ export function GuildSettings({
   const [description, setDescription] = useState(guildDescription);
   const [icon, setIcon] = useState(guildIcon);
   const [busy, setBusy] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const isCreator = user?.id === createdBy;
@@ -38,13 +41,16 @@ export function GuildSettings({
   async function save() {
     if (!nameValid || !dirty || busy) return;
     setBusy(true);
+    setSaved(false);
     try {
-      await firestore.guilds.update(guildId, {
-        name: trimmed,
-        description: description.trim(),
-        icon,
-      });
+      const updates = { name: trimmed, description: description.trim(), icon };
+      await firestore.guilds.update(guildId, updates);
+      onSaved?.(updates);
+      setSaved(true);
       toast("Guild settings saved.", "success");
+      setTimeout(() => setSaved(false), 2000);
+    } catch {
+      toast("Could not save guild settings.", "error");
     } finally {
       setBusy(false);
     }
@@ -60,14 +66,23 @@ export function GuildSettings({
       await firestore.guilds.delete(guildId);
       toast("Guild deleted.", "success");
       navigate("/dashboard");
-    } finally {
+    } catch {
+      toast("Could not delete guild.", "error");
       setBusy(false);
     }
   }
 
   return (
     <div className="mb-6 rounded-lg border border-line bg-panel p-5">
-      <h3 className="mb-4 font-display text-sm uppercase tracking-wide text-ink-soft">Settings</h3>
+      <div className="mb-4 flex items-center justify-between">
+        <h3 className="font-display text-sm uppercase tracking-wide text-ink-soft">Settings</h3>
+        {saved ? (
+          <span className="inline-flex items-center gap-1 text-[13px] font-medium text-success animate-fade-in">
+            <Icon name="check-circle" size={15} />
+            Saved
+          </span>
+        ) : null}
+      </div>
 
       <label htmlFor="guild-settings-name" className="mb-1.5 block text-sm font-medium text-ink-soft">
         Guild name
@@ -96,8 +111,8 @@ export function GuildSettings({
       />
 
       <div className="mt-4">
-        <Button size="md" disabled={!nameValid || !dirty || busy} onClick={save}>
-          Save changes
+        <Button size="md" loading={busy && !showDeleteConfirm} disabled={!nameValid || !dirty} onClick={save}>
+          {saved ? "Saved" : "Save changes"}
         </Button>
       </div>
 
@@ -117,10 +132,10 @@ export function GuildSettings({
               This will permanently delete <span className="font-semibold text-ink">{guildName}</span> and remove all members.
             </p>
             <div className="flex gap-2">
-              <Button size="sm" variant="danger" disabled={busy} onClick={deleteGuild}>
+              <Button size="sm" variant="danger" loading={busy} onClick={deleteGuild}>
                 {busy ? "Deleting…" : "Yes, delete"}
               </Button>
-              <Button size="sm" variant="secondary" onClick={() => setShowDeleteConfirm(false)}>
+              <Button size="sm" variant="secondary" disabled={busy} onClick={() => setShowDeleteConfirm(false)}>
                 Cancel
               </Button>
             </div>

@@ -22,6 +22,8 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   error: string | null;
+  isAdmin: boolean;
+  adminChecked: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -51,12 +53,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminChecked, setAdminChecked] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     const unsub = onAuthStateChanged(auth, (firebaseUser) => {
       if (!firebaseUser) {
         setUser(null);
+        setAdminChecked(true);
         setLoading(false);
         return;
       }
@@ -72,7 +77,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               avatar_url: firebaseUser.photoURL,
             });
           }
-          if (!cancelled) setUser(userData as User);
+          const admin = await firestore.adminCheck.isAdmin(firebaseUser.email ?? "");
+          if (!cancelled) {
+            setUser(userData as User);
+            setIsAdmin(admin);
+            setAdminChecked(true);
+          }
         } catch (e) {
           console.error("Failed to resolve Firestore user", e);
           if (!cancelled) setError(describeAuthError(e));
@@ -100,6 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function signOut() {
     await firebaseSignOut(auth);
     setUser(null);
+    setIsAdmin(false);
   }
 
   async function refreshUser() {
@@ -113,7 +124,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, error, signInWithGoogle, signOut, refreshUser, clearError }}>
+    <AuthContext.Provider
+      value={{ user, loading, error, isAdmin, adminChecked, signInWithGoogle, signOut, refreshUser, clearError }}
+    >
       {children}
     </AuthContext.Provider>
   );

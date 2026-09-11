@@ -4,20 +4,11 @@ import { firestore } from "@/lib/firestore";
 import { Card, Icon, StatPill, SubjectPill, DifficultyBadge } from "@/components/ui";
 import { formatCoins } from "@/utils/format";
 
-const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS ?? "")
-  .split(",")
-  .map((email: string) => email.trim().toLowerCase())
-  .filter(Boolean);
-
-function isAdmin(email: string) {
-  return ADMIN_EMAILS.length === 0 || ADMIN_EMAILS.includes(email.toLowerCase());
-}
-
 type StatRow = { id: string } & Record<string, unknown>;
 type ChapterRow = Record<string, unknown>;
 
 export default function Admin() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [users, setUsers] = useState<StatRow[]>([]);
   const [guilds, setGuilds] = useState<StatRow[]>([]);
   const [attempts, setAttempts] = useState<StatRow[]>([]);
@@ -25,9 +16,9 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user || !isAdmin(user.email)) return;
+    if (!user || !isAdmin) return;
     loadData();
-  }, [user]);
+  }, [user, isAdmin]);
 
   async function loadData() {
     const [usersData, guildsData, attemptsData, chapterData] = await Promise.all([
@@ -45,7 +36,7 @@ export default function Admin() {
 
   if (!user) return null;
 
-  if (!isAdmin(user.email)) {
+  if (!isAdmin) {
     return (
       <div className="mx-auto max-w-4xl animate-fade-in">
         <div className="surface-card flex flex-col items-center justify-center px-6 py-14 text-center">
