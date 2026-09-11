@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
-import { Button, Icon, LogoMark, GoogleLogo, type IconName } from "@/components/ui";
+import { Button, Icon, LogoMark, type IconName } from "@/components/ui";
 
 const FEATURES: { icon: IconName; title: string; desc: string }[] = [
   { icon: "users", title: "Guilds", desc: "Private study groups with invite links" },
@@ -22,15 +22,13 @@ export default function Landing() {
       <div className="relative w-full max-w-lg text-center">
         <div className="mx-auto mb-8 flex flex-col items-center gap-4">
           <LogoMark size={64} className="shadow-pop" />
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
-            SPM study guilds
-          </p>
+          <p className="eyebrow text-volt">SPM study guilds</p>
         </div>
 
-        <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
+        <h1 className="font-display text-5xl uppercase leading-none tracking-wide sm:text-6xl">
           Study in guilds.
           <br />
-          <span className="text-accent">Climb the ranks.</span>
+          <span className="text-volt">Climb the ranks.</span>
         </h1>
         <p className="mx-auto mt-5 max-w-md text-[17px] leading-relaxed text-ink-soft">
           Create a private study group, quiz your friends with AI-generated SPM questions,
@@ -39,7 +37,9 @@ export default function Landing() {
 
         <div className="mx-auto mt-9 max-w-sm">
           <Button size="lg" className="w-full" onClick={signInWithGoogle}>
-            <GoogleLogo size={19} />
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-field">
+              <span className="font-display text-sm leading-none text-volt">G</span>
+            </span>
             Sign in with Google
           </Button>
           <p className="mt-4 text-[13px] text-ink-muted">
@@ -47,24 +47,24 @@ export default function Landing() {
           </p>
 
           {error ? (
-            <div className="mt-5 rounded-2xl border border-danger/25 bg-danger/10 p-4 text-left animate-slide-down">
+            <div className="mt-5 rounded-lg border border-danger/25 bg-danger/10 p-4 text-left animate-slide-down">
               <div className="flex items-start gap-3">
                 <Icon name="info" size={18} className="mt-0.5 shrink-0 text-danger" />
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-danger">{error}</p>
                   <p className="mt-1.5 text-xs leading-relaxed text-ink-soft">
                     If sign-in still fails, make sure{" "}
-                    <code className="rounded bg-wash px-1 py-0.5 font-mono text-[11px] text-ink">rivalr-phi.vercel.app</code>{" "}
+                    <code className="rounded bg-overpanel px-1 py-0.5 font-mono text-[11px] text-ink">rivalr-phi.vercel.app</code>{" "}
                     is in the authorized domains list, and that
                     the{" "}
-                    <code className="rounded bg-wash px-1 py-0.5 font-mono text-[11px] text-ink">firestore.rules</code>{" "}
+                    <code className="rounded bg-overpanel px-1 py-0.5 font-mono text-[11px] text-ink">firestore.rules</code>{" "}
                     file has been published.
                   </p>
                 </div>
                 <button
                   onClick={clearError}
                   aria-label="Dismiss error"
-                  className="ml-auto shrink-0 rounded-lg p-1.5 text-ink-muted transition-colors hover:bg-wash hover:text-ink"
+                  className="ml-auto shrink-0 rounded-md p-1.5 text-ink-muted transition-colors hover:bg-overpanel hover:text-ink"
                 >
                   <Icon name="x" size={15} />
                 </button>
@@ -79,7 +79,7 @@ export default function Landing() {
               key={f.title}
               className="surface-card p-4 transition-colors hover:border-line-strong"
             >
-              <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-accent/10 text-accent">
+              <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-volt/10 text-volt">
                 <Icon name={f.icon} size={18} />
               </div>
               <h3 className="text-sm font-semibold">{f.title}</h3>
