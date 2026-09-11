@@ -15,7 +15,7 @@ export function CustomTauntManager({ onChanged }: { onChanged?: () => void }) {
 
   useEffect(() => {
     if (!user) return;
-    firestore.customTaunts.get(user.id).then(setTaunt);
+    firestore.customTaunts.get(user.google_id).then(setTaunt);
   }, [user]);
 
   async function handleFile(file: File | undefined) {
@@ -25,9 +25,9 @@ export function CustomTauntManager({ onChanged }: { onChanged?: () => void }) {
       const webp = await compressImage(file);
       const { asset_key } = await api.uploadTaunt(webp);
       const sha256 = asset_key.split("/").pop()!.split(".")[0]!;
-      await firestore.customTaunts.set(user.id, { asset_key, sha256 });
+      await firestore.customTaunts.set(user.google_id, { asset_key, sha256 });
       setTaunt({
-        user_id: user.id,
+        user_id: user.google_id,
         asset_key,
         sha256,
         is_equipped: true,
@@ -49,7 +49,7 @@ export function CustomTauntManager({ onChanged }: { onChanged?: () => void }) {
     setBusy(true);
     try {
       await api.deleteTaunt();
-      await firestore.customTaunts.remove(user.id);
+      await firestore.customTaunts.remove(user.google_id);
       setTaunt(null);
       toast("Custom taunt deleted.", "info");
       onChanged?.();
@@ -72,7 +72,7 @@ export function CustomTauntManager({ onChanged }: { onChanged?: () => void }) {
       {taunt ? (
         <div className="flex flex-wrap items-center gap-3">
           <img
-            src={api.tauntAssetUrl(user.id, `${taunt.sha256}.webp`)}
+            src={api.tauntAssetUrl(user.google_id, `${taunt.sha256}.webp`)}
             alt="Custom taunt"
             className="h-16 w-16 rounded-lg border border-line bg-overpanel object-cover"
           />

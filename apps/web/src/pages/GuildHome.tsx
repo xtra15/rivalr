@@ -71,9 +71,14 @@ export default function GuildHome() {
         setSlotsMap(slots);
 
         const ctMap: Record<string, CustomTaunt> = {};
+        const usersById = new Map((users as unknown as User[]).map((u) => [u.id, u]));
         for (const id of userIds) {
-          const ct = await firestore.customTaunts.get(id);
-          if (ct) ctMap[id] = ct;
+          const googleId = usersById.get(id)?.google_id;
+          if (!googleId) continue;
+          const ct = await firestore.customTaunts.get(googleId);
+          if (ct) {
+            ctMap[id] = { ...ct, user_id: googleId };
+          }
         }
         setCustomTaunts(ctMap);
       }
@@ -649,7 +654,7 @@ function ActivityTab({
               </div>
               {customTaunts[a.user_id] ? (
                 <img
-                  src={api.tauntAssetUrl(a.user_id, `${customTaunts[a.user_id]!.sha256}.webp`)}
+                  src={api.tauntAssetUrl(customTaunts[a.user_id]!.user_id, `${customTaunts[a.user_id]!.sha256}.webp`)}
                   alt="Taunt"
                   className="mt-1.5 ml-12 max-h-16 max-w-28 rounded-lg border border-line bg-overpanel object-cover"
                 />
