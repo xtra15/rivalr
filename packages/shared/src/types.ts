@@ -73,9 +73,27 @@ export interface ShopItem {
   id: string;
   name: string;
   description: string;
-  category: "avatar_frame" | "sound_effect" | "quiz_theme" | "taunt";
+  category: "avatar_frame" | "sound_effect" | "quiz_theme" | "taunt" | "title" | "name_glow";
   coin_cost: number;
   preview_data: string | null;
+}
+
+export interface PublicUser {
+  id: string;
+  name: string;
+  avatar_url: string | null;
+  xp: number;
+  coins: number;
+  status?: string;
+  created_at: string;
+}
+
+export interface CustomTaunt {
+  user_id: string;
+  asset_key: string;
+  sha256: string;
+  is_equipped: boolean;
+  created_at: string;
 }
 
 export interface UserInventory {
