@@ -10,6 +10,7 @@ import QuizLobby from "@/pages/QuizLobby";
 import QuizScreen from "@/pages/QuizScreen";
 import Results from "@/pages/Results";
 import Profile from "@/pages/Profile";
+import ProfilePublic from "@/pages/ProfilePublic";
 import Shop from "@/pages/Shop";
 
 const ADMIN_ENABLED = import.meta.env.VITE_ADMIN_ENABLED === "true";
@@ -27,6 +28,7 @@ export default function App() {
             <Route path="/guild/:guildId/quiz" element={<QuizLobby />} />
             <Route path="/guild/:guildId/quiz/:quizId/results" element={<Results />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/profile/:userId" element={<ProfilePublic />} />
             <Route path="/shop" element={<Shop />} />
             {AdminPage ? (
               <Route
