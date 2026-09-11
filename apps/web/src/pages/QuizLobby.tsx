@@ -65,7 +65,13 @@ export default function QuizLobby() {
         time_taken_seconds: 0,
         xp_earned: 0,
         coins_earned: 0,
-        questions_data: data.questions.map((q) => ({ ...q, user_answer: undefined })),
+        questions_data: data.questions.map((q) => ({
+          question: q.question,
+          options: q.options,
+          correct: q.correct,
+          explanation: q.explanation ?? "",
+          user_answer: null,
+        })),
       });
 
       if (attempt) {

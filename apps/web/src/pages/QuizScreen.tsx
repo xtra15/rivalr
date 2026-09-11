@@ -90,7 +90,10 @@ export default function QuizScreen() {
       time_taken_seconds: timeElapsed,
       xp_earned: Math.round(baseXP),
       coins_earned: coins,
-      questions_data: attempt.questions_data,
+      questions_data: attempt.questions_data.map((q) => ({
+        ...q,
+        user_answer: q.user_answer ?? null,
+      })),
     });
 
     await firestore.users.updateXP(user.id, Math.round(baseXP));
