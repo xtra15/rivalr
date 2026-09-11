@@ -225,14 +225,28 @@ async getByIds(ids: string[]) {
       const snap = await getDocs(q);
       return snap.docs.map((d) => toPlain(d.data() as Record<string, unknown>));
     },
-    async upsert(userId: string, subject: string, data: FsWriteData) {
+    async upsert(
+      userId: string,
+      uid: string,
+      subject: string,
+      data: { correct: number; total: number; streak: number; xp: number },
+    ) {
       const ref = doc(db, "user_subject_stats", `${userId}_${subject}`);
-      const existing = await getDoc(ref);
-      if (existing.exists()) {
-        await updateDoc(ref, data);
-      } else {
-        await setDoc(ref, { user_id: userId, subject, ...data });
-      }
+      const existing = (await getDoc(ref)).data() as Record<string, number | undefined> | undefined;
+      await setDoc(
+        ref,
+        {
+          user_id: userId,
+          uid,
+          subject,
+          quizzes_completed: (existing?.quizzes_completed ?? 0) + 1,
+          correct_answers: (existing?.correct_answers ?? 0) + data.correct,
+          total_questions: (existing?.total_questions ?? 0) + data.total,
+          best_streak: Math.max(existing?.best_streak ?? 0, data.streak),
+          xp_earned: (existing?.xp_earned ?? 0) + data.xp,
+        },
+        { merge: true },
+      );
     },
   },
 
@@ -241,14 +255,39 @@ async getByIds(ids: string[]) {
       const snap = await getDocs(collection(db, "user_chapter_stats"));
       return snap.docs.map((d) => toPlain(d.data() as Record<string, unknown>));
     },
-    async upsert(userId: string, key: string, data: FsWriteData) {
+    async upsert(
+      userId: string,
+      uid: string,
+      subject: string,
+      chapterNumber: number,
+      chapterName: string,
+      difficulty: string,
+      data: { correct: number; total: number; time: number; xp: number },
+    ) {
+      const key = `${userId}_${subject}_${chapterNumber}`;
       const ref = doc(db, "user_chapter_stats", key);
-      const existing = await getDoc(ref);
-      if (existing.exists()) {
-        await updateDoc(ref, data);
-      } else {
-        await setDoc(ref, { user_id: userId, ...data });
-      }
+      const existing = (await getDoc(ref)).data() as Record<string, number | null | undefined> | undefined;
+      await setDoc(
+        ref,
+        {
+          user_id: userId,
+          uid,
+          subject,
+          chapter_number: chapterNumber,
+          chapter_name: chapterName,
+          difficulty,
+          attempts: (existing?.attempts ?? 0) + 1,
+          correct_answers: (existing?.correct_answers ?? 0) + data.correct,
+          total_questions: (existing?.total_questions ?? 0) + data.total,
+          best_score: Math.max(existing?.best_score ?? 0, data.correct),
+          best_time_seconds:
+            existing?.best_time_seconds === undefined || existing?.best_time_seconds === null
+              ? data.time
+              : Math.min(existing?.best_time_seconds, data.time),
+          xp_earned: (existing?.xp_earned ?? 0) + data.xp,
+        },
+        { merge: true },
+      );
     },
   },
 
