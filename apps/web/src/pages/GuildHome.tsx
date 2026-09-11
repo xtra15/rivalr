@@ -14,6 +14,7 @@ import {
   LiveBadge,
   Icon,
   Button,
+  FormulaText,
   useToast,
 } from "@/components/ui";
 import { formatAccuracy, formatTime, getLevel } from "@/utils/format";
@@ -675,7 +676,7 @@ function HistoryTab({
                       <div key={qi} className="rounded-lg border border-line bg-overpanel/60 p-3">
                         <p className="text-sm font-medium leading-relaxed">
                           <span className="mr-1.5 text-ink-muted">Q{qi + 1}.</span>
-                          {q.question}
+                          <FormulaText text={q.question} />
                         </p>
                         <div className="mt-2 space-y-1">
                           {q.options.map((opt, oi) => {
@@ -695,7 +696,7 @@ function HistoryTab({
                                 <span className="mt-px flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-panel text-[10px] font-semibold text-ink-muted">
                                   {String.fromCharCode(65 + oi)}
                                 </span>
-                                <span className="min-w-0 flex-1">{opt}</span>
+                                <span className="min-w-0 flex-1"><FormulaText text={opt} /></span>
                                 {isRight ? <Icon name="check" size={14} className="mt-0.5 shrink-0" /> : null}
                                 {isWrong ? <Icon name="x" size={14} className="mt-0.5 shrink-0" /> : null}
                               </p>
@@ -704,7 +705,7 @@ function HistoryTab({
                         </div>
                         {q.explanation ? (
                           <p className="mt-2.5 border-t border-line pt-2 text-xs italic leading-relaxed text-ink-muted">
-                            {q.explanation}
+                            <FormulaText text={q.explanation} />
                           </p>
                         ) : null}
                       </div>

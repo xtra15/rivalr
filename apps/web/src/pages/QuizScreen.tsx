@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { firestore } from "@/lib/firestore";
-import { ProgressBar, Icon, LoadingScreen } from "@/components/ui";
+import { ProgressBar, Icon, LoadingScreen, FormulaText } from "@/components/ui";
 import { formatTime } from "@/utils/format";
 import type { QuizAttempt } from "@rivalr/shared";
 
@@ -140,9 +140,11 @@ export default function QuizScreen() {
         <p className="mb-3 text-xs text-ink-muted">
           Form {attempt.form} {attempt.subject} · Ch {attempt.chapter_number}
         </p>
-        <p className="max-w-xl text-lg font-medium leading-relaxed text-ink sm:text-xl">
-          {currentQuestion.question}
-        </p>
+        <FormulaText
+          text={currentQuestion.question}
+          className="max-w-xl text-lg font-medium leading-relaxed text-ink sm:text-xl"
+          display
+        />
       </div>
 
       <div className="flex flex-col gap-2.5">
@@ -179,9 +181,7 @@ export default function QuizScreen() {
               >
                 {String.fromCharCode(65 + i)}
               </span>
-              <span className="flex-1 py-3.5 text-[15px] leading-snug text-ink sm:py-4">
-                {opt}
-              </span>
+              <FormulaText text={opt} className="flex-1 py-3.5 text-[15px] leading-snug text-ink sm:py-4" />
               {isRight ? <Icon name="check" size={18} className="mt-4 shrink-0 text-success" /> : null}
               {isWrong ? <Icon name="x" size={18} className="mt-4 shrink-0 text-danger" /> : null}
             </button>
@@ -210,7 +210,7 @@ export default function QuizScreen() {
             <p className={`text-sm font-semibold ${isCorrect ? "text-success" : "text-danger"}`}>
               {isCorrect ? "Correct" : "Incorrect"}
             </p>
-            <p className="text-sm leading-relaxed text-ink-muted">{currentQuestion.explanation}</p>
+            <FormulaText text={currentQuestion.explanation} className="text-sm leading-relaxed text-ink-muted" display />
           </div>
           <button
             onClick={nextQuestion}

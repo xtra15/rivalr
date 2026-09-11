@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { firestore } from "@/lib/firestore";
-import { Card, Button, Icon, StatPill, LoadingScreen, type IconName } from "@/components/ui";
+import { Card, Button, Icon, StatPill, LoadingScreen, FormulaText, type IconName } from "@/components/ui";
 import { formatTime, formatCoins, formatAccuracy } from "@/utils/format";
 import type { QuizAttempt } from "@rivalr/shared";
 
@@ -75,9 +75,9 @@ export default function Results() {
               return (
                 <Card key={i} className={`p-4 ${isRight ? "border-success/20" : "border-line"}`}>
                   <div className="mb-2 flex items-start justify-between gap-3">
-                    <p className="text-sm font-medium leading-snug">
+                    <p className="min-w-0 flex-1 text-sm font-medium leading-snug">
                       <span className="mr-1.5 text-ink-muted">Q{i + 1}.</span>
-                      {q.question}
+                      <FormulaText text={q.question} />
                     </p>
                     <span
                       className={`mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
@@ -99,7 +99,7 @@ export default function Results() {
                         }`}
                       >
                         <span className="text-[11px] font-semibold text-ink-muted">{String.fromCharCode(65 + oi)}.</span>
-                        <span className="min-w-0 flex-1">{opt}</span>
+                        <FormulaText text={opt} className="min-w-0 flex-1" />
                         {right ? <Icon name="check" size={13} className="shrink-0" /> : null}
                         {wrong ? <Icon name="x" size={13} className="shrink-0" /> : null}
                       </p>
@@ -107,7 +107,7 @@ export default function Results() {
                   })}
                   {q.explanation ? (
                     <p className="mt-2.5 border-t border-line pt-2.5 text-xs italic leading-relaxed text-ink-muted">
-                      {q.explanation}
+                      <FormulaText text={q.explanation} />
                     </p>
                   ) : null}
                 </Card>
