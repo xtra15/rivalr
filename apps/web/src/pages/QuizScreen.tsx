@@ -124,7 +124,7 @@ export default function QuizScreen() {
           </span>
         </div>
         {streak >= 3 ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-500/10 px-3 py-1.5 text-[13px] font-semibold text-orange-700 ring-1 ring-inset ring-orange-500/30 animate-scale-in">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-warning/10 px-3 py-1.5 text-[13px] font-semibold text-warning ring-1 ring-inset ring-warning/30 animate-scale-in">
             <Icon name="flame" size={15} />
             {streak} streak
           </span>
@@ -148,34 +148,34 @@ export default function QuizScreen() {
               key={i}
               onClick={() => handleAnswer(i)}
               disabled={showResult}
-              className={`group flex items-start gap-3 rounded-2xl border p-4 text-left transition-all duration-150
+              className={`group flex items-start gap-3 rounded-lg border p-4 text-left transition-all duration-150
                 ${
                   isRight
-                    ? "border-success/50 bg-success/10"
+                    ? "border-volt/60 bg-volt/10"
                     : isWrong
-                      ? "border-danger/50 bg-danger/10"
+                      ? "border-danger/60 bg-danger/10"
                       : showResult
-                        ? "border-line bg-surface opacity-50"
+                        ? "border-line bg-overpanel opacity-50"
                         : isSelected
-                          ? "border-accent bg-accent/10"
-                          : "border-line bg-surface hover:border-line-strong hover:bg-wash active:scale-[0.99]"
+                          ? "border-volt bg-volt/10"
+                          : "border-line bg-overpanel hover:border-line-strong hover:bg-panel-2 active:scale-[0.99]"
                 }`}
             >
               <span
-                className={`mt-px flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold transition-colors ${
+                className={`mt-px flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[13px] font-semibold transition-colors ${
                   isRight
-                    ? "bg-success text-white"
+                    ? "bg-volt text-field"
                     : isWrong
-                      ? "bg-danger text-white"
+                      ? "bg-danger text-field"
                       : isSelected || showResult
                         ? "bg-line-strong text-ink"
-                        : "bg-wash text-ink-muted group-hover:bg-line-strong"
+                        : "bg-overpanel text-ink-muted group-hover:bg-line-strong"
                 }`}
               >
                 {String.fromCharCode(65 + i)}
               </span>
               <span className="text-[15px] leading-snug">{opt}</span>
-              {isRight ? <Icon name="check" size={16} className="mt-1 ml-auto shrink-0 text-success" /> : null}
+              {isRight ? <Icon name="check" size={16} className="mt-1 ml-auto shrink-0 text-volt" /> : null}
               {isWrong ? <Icon name="x" size={16} className="mt-1 ml-auto shrink-0 text-danger" /> : null}
             </button>
           );
@@ -187,11 +187,11 @@ export default function QuizScreen() {
           <Card
             className={`p-5 ${
               isCorrect
-                ? "border-success/30 bg-success/[0.06]"
-                : "border-danger/30 bg-danger/[0.06]"
+                ? "border-volt/40 bg-volt/[0.08]"
+                : "border-danger/40 bg-danger/[0.08]"
             }`}
           >
-            <p className={`flex items-center gap-2 font-semibold ${isCorrect ? "text-success" : "text-danger"}`}>
+            <p className={`flex items-center gap-2 font-semibold ${isCorrect ? "text-volt" : "text-danger"}`}>
               <Icon name={isCorrect ? "check-circle" : "x-circle"} size={19} />
               {isCorrect ? "Correct!" : "Incorrect"}
             </p>

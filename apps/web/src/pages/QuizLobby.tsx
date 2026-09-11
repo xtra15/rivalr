@@ -106,19 +106,22 @@ export default function QuizLobby() {
     <div className="mx-auto max-w-xl animate-fade-in">
       <button
         onClick={() => navigate(`/guild/${guildId}`)}
-        className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-ink-muted transition-colors hover:text-ink"
+        className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-ink-muted transition-colors hover:text-volt"
       >
         <Icon name="arrow-left" size={16} />
         Back to guild
       </button>
 
-      <h1 className="text-3xl font-bold tracking-tight">New Quiz</h1>
+      <h1 className="font-display text-3xl uppercase tracking-wide">New Quiz</h1>
 
       <div className="mt-6 grid grid-cols-5 gap-2">
         {STEP_LABELS.map((label, i) => (
           <div key={label} className="flex flex-col gap-1.5">
-            <div className={`h-1 rounded-full ${i <= step ? "bg-accent" : "bg-wash"}`} aria-hidden="true" />
-            <span className={`text-[11px] font-medium uppercase tracking-wide ${i === step ? "text-accent" : "text-ink-muted"}`}>
+            <div
+              className={`h-1 rounded-[2px] ${i < step ? "bg-volt/40" : i === step ? "bg-accent" : "bg-overpanel"}`}
+              aria-hidden="true"
+            />
+            <span className={`text-[11px] font-semibold uppercase tracking-wide ${i === step ? "text-volt" : "text-ink-faint"}`}>
               {label}
             </span>
           </div>
@@ -134,13 +137,13 @@ export default function QuizLobby() {
           <button
             key={i}
             onClick={() => selectStep(opt)}
-            className="surface-card group flex items-center justify-between p-4 text-left transition-all duration-150 hover:border-line-strong hover:bg-wash active:scale-[0.995]"
+            className="surface-card group flex items-center justify-between p-4 text-left transition-all duration-150 hover:border-line-strong hover:bg-overpanel active:scale-[0.995]"
           >
-            <span className="text-[15px] font-medium text-ink">{optionLabel(opt)}</span>
+            <span className="text-[15px] font-medium text-ink-soft">{optionLabel(opt)}</span>
             <Icon
               name="chevron-right"
               size={18}
-              className="text-ink-faint transition-all group-hover:translate-x-0.5 group-hover:text-ink-soft"
+              className="text-ink-faint transition-all group-hover:translate-x-0.5 group-hover:text-volt"
             />
           </button>
         ))}
