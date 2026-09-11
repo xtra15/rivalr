@@ -19,8 +19,9 @@ import {
 import { formatAccuracy, formatTime, getLevel } from "@/utils/format";
 import { GuildSettings } from "@/components/GuildSettings";
 import { UserCard, resolveEquipped, type EquippedSlots } from "@/components/UserCard";
+import { api } from "@/lib/api";
 import type { Guild, User, QuizAttempt, UserChapterStats } from "@rivalr/shared";
-import type { ShopItem } from "@rivalr/shared";
+import type { ShopItem, CustomTaunt } from "@rivalr/shared";
 
 export default function GuildHome() {
   const { guildId } = useParams<{ guildId: string }>();
@@ -32,6 +33,7 @@ export default function GuildHome() {
   const [inviteCopied, setInviteCopied] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [slotsMap, setSlotsMap] = useState<Record<string, EquippedSlots>>({});
+  const [customTaunts, setCustomTaunts] = useState<Record<string, CustomTaunt>>({});
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -67,6 +69,13 @@ export default function GuildHome() {
           );
         }
         setSlotsMap(slots);
+
+        const ctMap: Record<string, CustomTaunt> = {};
+        for (const id of userIds) {
+          const ct = await firestore.customTaunts.get(id);
+          if (ct) ctMap[id] = ct;
+        }
+        setCustomTaunts(ctMap);
       }
 
       const quizData = await firestore.quizAttempts.getByGuild(guildId);
@@ -238,7 +247,7 @@ export default function GuildHome() {
             )}
 
             {activeTab === "activity" && (
-              <ActivityTab attempts={sortedAttempts} memberMap={memberMap} slotsMap={slotsMap} />
+              <ActivityTab attempts={sortedAttempts} memberMap={memberMap} slotsMap={slotsMap} customTaunts={customTaunts} />
             )}
 
             {activeTab === "history" && (
@@ -585,10 +594,12 @@ function ActivityTab({
   attempts,
   memberMap,
   slotsMap,
+  customTaunts,
 }: {
   attempts: QuizAttempt[];
   memberMap: Map<string, User>;
   slotsMap: Record<string, EquippedSlots>;
+  customTaunts: Record<string, CustomTaunt>;
 }) {
   const [visible, setVisible] = useState(20);
 
@@ -636,6 +647,13 @@ function ActivityTab({
                   })}
                 </span>
               </div>
+              {customTaunts[a.user_id] ? (
+                <img
+                  src={api.tauntAssetUrl(a.user_id, `${customTaunts[a.user_id]!.sha256}.webp`)}
+                  alt="Taunt"
+                  className="mt-1.5 ml-12 max-h-16 max-w-28 rounded-lg border border-line bg-overpanel object-cover"
+                />
+              ) : null}
             </div>
           );
         })}
