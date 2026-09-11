@@ -16,21 +16,26 @@ function renderKaTeX(tex: string, displayMode: boolean): string {
       trust: true,
     });
   } catch {
-    return tex;
+    return `<span class="text-danger text-xs">[formula error]</span>`;
   }
+}
+
+function processInline(text: string): string {
+  return text
+    .replace(/\$\$([\s\S]+?)\$\$/g, (_, tex) => renderKaTeX(tex.trim(), true))
+    .replace(/\$([^\$]+?)\$/g, (_, tex) => renderKaTeX(tex.trim(), false))
+    .replace(/\\\((.+?)\\\)/g, (_, tex) => renderKaTeX(tex.trim(), false))
+    .replace(/\\\[[\s\S]*?\\\]/g, (match) => {
+      const tex = match.slice(2, -2).trim();
+      return renderKaTeX(tex, true);
+    });
 }
 
 export function FormulaText({ text, className = "", display = false }: FormulaTextProps) {
   const html = useMemo(() => {
     if (!text) return "";
-    const displayParts = text.split(/\$\$/);
-    return displayParts
-      .map((part, i) => {
-        if (i % 2 === 1) return renderKaTeX(part.trim(), true);
-        return part.replace(/\$([^$]+?)\$/g, (_, tex) => renderKaTeX(tex, false));
-      })
-      .join("");
-  }, [text, display]);
+    return processInline(text);
+  }, [text]);
 
   return (
     <span

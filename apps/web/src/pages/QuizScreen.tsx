@@ -20,6 +20,7 @@ export default function QuizScreen() {
   const [remaining, setRemaining] = useState(60);
   const [loading, setLoading] = useState(true);
   const timerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+  const finishedRef = useRef(false);
 
   useEffect(() => {
     loadAttempt();
@@ -91,7 +92,8 @@ export default function QuizScreen() {
   }
 
   async function finishQuiz() {
-    if (!attempt || !guildId || !user) return;
+    if (!attempt || !guildId || !user || finishedRef.current) return;
+    finishedRef.current = true;
     clearInterval(timerRef.current);
 
     const correct = attempt.questions_data.filter((q) => q.user_answer === q.correct).length;

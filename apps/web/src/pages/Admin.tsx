@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { firestore } from "@/lib/firestore";
-import { Card, Icon, StatPill, SubjectPill, DifficultyBadge } from "@/components/ui";
-import { formatCoins } from "@/utils/format";
+import { Card, Icon, StatPill, SubjectPill, DifficultyBadge, FormulaText } from "@/components/ui";
+import { formatCoins, formatAccuracy, formatTime } from "@/utils/format";
 
 type StatRow = { id: string } & Record<string, unknown>;
 type ChapterRow = Record<string, unknown>;
@@ -13,6 +13,7 @@ export default function Admin() {
   const [guilds, setGuilds] = useState<StatRow[]>([]);
   const [attempts, setAttempts] = useState<StatRow[]>([]);
   const [chapterStats, setChapterStats] = useState<ChapterRow[]>([]);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -142,21 +143,118 @@ export default function Admin() {
       <div>
         <p className="mb-3 text-[13px] text-ink-muted">Recent attempts</p>
         <div className="overflow-hidden rounded-lg border border-line">
-          {recentAttempts.map((a) => (
-            <div key={a.id} className="flex items-center gap-3 border-b border-line bg-panel px-4 py-3 last:border-0">
-              <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
-                <span className="text-sm text-ink">
-                  <span className="font-medium">{String(a.user_name ?? a.user_id ?? "…")}</span>
-                  <span className="text-ink-muted"> scored {Number(a.correct_answers ?? 0)}/{Number(a.total_questions ?? 0)}</span>
-                </span>
-                <SubjectPill subject={String(a.subject)} />
-                <DifficultyBadge difficulty={String(a.difficulty)} />
+          {recentAttempts.map((a) => {
+            const isExpanded = expandedId === a.id;
+            const qData = (a.questions_data ?? []) as {
+              question: string;
+              options: string[];
+              correct: number;
+              explanation?: string;
+              user_answer?: number | null;
+            }[];
+            const corr = Number(a.correct_answers ?? 0);
+            const tot = Number(a.total_questions ?? 0);
+
+            return (
+              <div key={a.id} className="border-b border-line last:border-0">
+                <button
+                  onClick={() => setExpandedId(isExpanded ? null : a.id)}
+                  className="flex w-full items-center gap-3 bg-panel px-4 py-3 text-left transition-colors hover:bg-overpanel"
+                >
+                  <div className="min-w-0 flex-1 flex-wrap items-center gap-2 sm:flex">
+                    <span className="text-sm font-medium">{String(a.user_name ?? a.user_id ?? "…")}</span>
+                    <SubjectPill subject={String(a.subject)} />
+                    <DifficultyBadge difficulty={String(a.difficulty)} />
+                    <span className="font-mono text-sm tabular-nums text-ink">{corr}/{tot}</span>
+                    <span className="text-xs text-ink-muted">
+                      {formatAccuracy(corr, tot)} · {Number(a.xp_earned ?? 0)} XP · {Number(a.coins_earned ?? 0)} coins
+                    </span>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-3">
+                    <span className="text-xs tabular-nums text-ink-faint">
+                      {a.completed_at ? new Date(String(a.completed_at)).toLocaleString() : ""}
+                    </span>
+                    <Icon
+                      name="chevron-down"
+                      size={16}
+                      className={`text-ink-muted transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                    />
+                  </div>
+                </button>
+
+                {isExpanded && (
+                  <div className="border-t border-line bg-field px-4 py-3 animate-slide-down">
+                    <div className="mb-2 flex items-center gap-3 text-xs text-ink-muted">
+                      <span>ID: {a.id}</span>
+                      <span>Form {String(a.form)} · Ch {String(a.chapter_number)}</span>
+                      <span>Time: {formatTime(Number(a.time_taken_seconds ?? 0))}</span>
+                    </div>
+                    {qData.length === 0 ? (
+                      <p className="py-4 text-center text-sm text-ink-muted">No question data recorded.</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {qData.map((q, qi) => {
+                          const isRight = q.user_answer === q.correct;
+                          const answered = q.user_answer !== null && q.user_answer !== undefined;
+                          return (
+                            <div
+                              key={qi}
+                              className={`rounded-lg border p-3 ${
+                                isRight ? "border-success/30 bg-success/5" : answered ? "border-danger/30 bg-danger/5" : "border-line bg-overpanel/60"
+                              }`}
+                            >
+                              <div className="mb-1.5 flex items-start justify-between gap-2">
+                                <p className="text-sm font-medium leading-snug">
+                                  <span className="mr-1.5 text-ink-muted">Q{qi + 1}.</span>
+                                  <FormulaText text={String(q.question)} />
+                                </p>
+                                <span
+                                  className={`mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                                    isRight ? "bg-success/15 text-success" : answered ? "bg-danger/15 text-danger" : "bg-overpanel text-ink-muted"
+                                  }`}
+                                >
+                                  <Icon name={isRight ? "check" : answered ? "x" : "timer"} size={12} />
+                                  {isRight ? "Correct" : answered ? "Wrong" : "Unanswered"}
+                                </span>
+                              </div>
+                              {q.options.map((opt, oi) => {
+                                const isCorrectOpt = oi === q.correct;
+                                const isChosenWrong = oi === q.user_answer && !isCorrectOpt;
+                                return (
+                                  <p
+                                    key={oi}
+                                    className={`flex items-start gap-2 rounded-md px-2 py-1 text-[13px] leading-snug ${
+                                      isCorrectOpt
+                                        ? "bg-success/10 text-success"
+                                        : isChosenWrong
+                                          ? "bg-danger/10 text-danger"
+                                          : "text-ink-muted"
+                                    }`}
+                                  >
+                                    <span className="mt-px flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-panel text-[10px] font-semibold text-ink-muted">
+                                      {String.fromCharCode(65 + oi)}
+                                    </span>
+                                    <span className="min-w-0 flex-1"><FormulaText text={opt} /></span>
+                                    {isCorrectOpt ? <Icon name="check" size={14} className="mt-0.5 shrink-0" /> : null}
+                                    {isChosenWrong ? <Icon name="x" size={14} className="mt-0.5 shrink-0" /> : null}
+                                  </p>
+                                );
+                              })}
+                              {q.explanation ? (
+                                <p className="mt-2 border-t border-line pt-2 text-xs italic leading-relaxed text-ink-muted">
+                                  <FormulaText text={String(q.explanation)} />
+                                </p>
+                              ) : null}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-              <span className="shrink-0 text-xs tabular-nums text-ink-faint">
-                {a.completed_at ? new Date(String(a.completed_at)).toLocaleString() : ""}
-              </span>
-            </div>
-          ))}
+            );
+          })}
           {recentAttempts.length === 0 ? (
             <div className="bg-panel py-10 text-center text-sm text-ink-muted">No attempts yet.</div>
           ) : null}
