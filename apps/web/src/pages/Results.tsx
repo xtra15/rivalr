@@ -26,24 +26,24 @@ export default function Results() {
 
   const result =
     accuracy === 100
-      ? { icon: "trophy" as IconName, title: "Perfect score!", tint: "text-amber-600 bg-amber-400/15 ring-amber-500/30" }
+      ? { icon: "trophy" as IconName, title: "Perfect score!", tint: "text-volt bg-volt/10 ring-volt/30" }
       : accuracy >= 80
-        ? { icon: "star" as IconName, title: "Great work!", tint: "text-accent bg-accent/10 ring-accent/30" }
+        ? { icon: "star" as IconName, title: "Great work!", tint: "text-volt bg-volt/10 ring-volt/30" }
         : accuracy >= 60
           ? { icon: "check" as IconName, title: "Solid effort", tint: "text-success bg-success/10 ring-success/30" }
-          : { icon: "book" as IconName, title: "Keep revising", tint: "text-ink-soft bg-wash ring-line-strong" };
+          : { icon: "book" as IconName, title: "Keep revising", tint: "text-ink-muted bg-overpanel ring-line-strong" };
 
   return (
     <div className="mx-auto max-w-xl animate-fade-in">
       <div className="mb-8 text-center">
-        <div className={`mx-auto mb-5 inline-flex h-20 w-20 items-center justify-center rounded-3xl ring-1 ${result.tint}`}>
+        <div className={`mx-auto mb-5 inline-flex h-20 w-20 items-center justify-center rounded-lg ring-1 ${result.tint}`}>
           <Icon name={result.icon} size={38} strokeWidth={1.5} />
         </div>
-        <h1 className="text-4xl font-bold tracking-tight">{result.title}</h1>
-        <p className="mt-2 text-lg font-semibold tabular-nums text-ink">
+        <h1 className="font-display text-4xl uppercase tracking-wide">{result.title}</h1>
+        <p className="mt-2 font-display text-2xl tabular-nums text-volt">
           {attempt.correct_answers}/{attempt.total_questions} correct
         </p>
-        <p className="mt-0.5 text-sm text-ink-muted">
+        <p className="mt-1 text-sm text-ink-muted">
           {attempt.subject} · Ch. {attempt.chapter_number} · {attempt.difficulty}
         </p>
       </div>
