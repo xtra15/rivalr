@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { firestore } from "@/lib/firestore";
 import { Card, StatCard, Button, Icon, LoadingScreen, type IconName } from "@/components/ui";
-import { formatTime } from "@/utils/format";
+import { formatTime, formatCoins } from "@/utils/format";
 import type { QuizAttempt } from "@rivalr/shared";
 
 export default function Results() {
@@ -52,7 +52,7 @@ export default function Results() {
         <StatCard label="Accuracy" value={`${accuracy}%`} icon="target" tint="accent" />
         <StatCard label="Time" value={formatTime(attempt.time_taken_seconds)} icon="timer" />
         <StatCard label="XP Earned" value={`+${attempt.xp_earned}`} icon="zap" tint="warning" />
-        <StatCard label="Coins Earned" value={`+${attempt.coins_earned}`} icon="coin" tint="success" />
+        <StatCard label="Coins Earned" value={`+${formatCoins(attempt.coins_earned)}`} icon="coin" tint="success" />
       </div>
 
       <h2 className="mb-3 text-base font-semibold">Review Answers</h2>

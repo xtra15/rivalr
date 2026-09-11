@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { firestore } from "@/lib/firestore";
 import { Card, Avatar, StatCard, ProgressBar, EmptyState, Icon, achievementIcon } from "@/components/ui";
-import { getLevel, formatAccuracy } from "@/utils/format";
+import { getLevel, formatAccuracy, formatCoins } from "@/utils/format";
 import type { UserSubjectStats, UserAchievement } from "@rivalr/shared";
 
 interface EnrichedAchievement {
@@ -82,7 +82,7 @@ export default function Profile() {
         <StatCard label="Quizzes" value={totalQuizzes} icon="book" />
         <StatCard label="Accuracy" value={formatAccuracy(totalCorrect, totalQuestions)} icon="target" tint="accent" />
         <StatCard label="Total XP" value={user.xp} icon="zap" tint="warning" />
-        <StatCard label="Coins" value={user.coins} icon="coin" tint="success" />
+        <StatCard label="Coins" value={formatCoins(user.coins)} icon="coin" tint="success" />
       </div>
 
       <h2 className="mb-3 text-base font-semibold">Subject Breakdown</h2>

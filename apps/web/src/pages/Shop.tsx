@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { firestore } from "@/lib/firestore";
 import { Card, Button, Badge, Icon, PageHeader, type IconName } from "@/components/ui";
+import { formatCoins } from "@/utils/format";
 import type { ShopItem } from "@rivalr/shared";
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -97,7 +98,7 @@ export default function Shop() {
         actions={
           <Badge variant="info" className="px-3.5 py-1.5 text-sm font-semibold tabular-nums">
             <Icon name="coin" size={16} />
-            {user?.coins ?? 0}
+            {formatCoins(user?.coins ?? 0)}
           </Badge>
         }
       />
@@ -170,7 +171,7 @@ export default function Shop() {
                                 Buy
                                 <span className="inline-flex items-center gap-1 tabular-nums">
                                   <Icon name="coin" size={15} />
-                                  {item.coin_cost}
+                                  {formatCoins(item.coin_cost)}
                                 </span>
                               </>
                             )}

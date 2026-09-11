@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { firestore } from "@/lib/firestore";
 import { Card, Icon, Input, Button, StatCard, PageHeader, EmptyState } from "@/components/ui";
-import { getLevel } from "@/utils/format";
+import { getLevel, formatCoins } from "@/utils/format";
 import type { Guild } from "@rivalr/shared";
 
 export default function Dashboard() {
@@ -98,7 +98,7 @@ export default function Dashboard() {
       <div className="mb-9 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard label="Guilds" value={guilds.length} icon="users" />
         <StatCard label="Total XP" value={user?.xp ?? 0} icon="zap" tint="accent" />
-        <StatCard label="Coins" value={user?.coins ?? 0} icon="coin" tint="warning" />
+        <StatCard label="Coins" value={formatCoins(user?.coins ?? 0)} icon="coin" tint="warning" />
         <StatCard label="Level" value={level.level} icon="star" tint="success" />
       </div>
 

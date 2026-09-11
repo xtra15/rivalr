@@ -60,6 +60,23 @@ export function formatAccuracy(correct: number, total: number): string {
   return `${Math.round((correct / total) * 100)}%`;
 }
 
+export function formatCoins(n: number): string {
+  if (!Number.isFinite(n)) return "0";
+  const abs = Math.abs(n);
+  const sign = n < 0 ? "-" : "";
+  if (abs < 1000) return `${sign}${abs}`;
+  const units = ["K", "M", "B", "T"];
+  let idx = -1;
+  let v = abs;
+  while (v >= 1000 && idx < units.length - 1) {
+    v /= 1000;
+    idx++;
+  }
+  const decimals = v >= 100 ? 0 : v >= 10 ? 1 : 2;
+  const text = v.toFixed(decimals).replace(/(\.\d*?)0+(?=$)/, "$1").replace(/\.$/, "");
+  return `${sign}${text}${units[idx]}`;
+}
+
 export const DIFFICULTY_COLORS: Record<string, string> = {
   Easy: "border-success/25 bg-success/10 text-success",
   Medium: "border-warning/25 bg-warning/10 text-warning",
