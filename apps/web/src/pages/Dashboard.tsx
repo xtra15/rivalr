@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { firestore } from "@/lib/firestore";
 import { Card, Icon, Input, Button, StatPill, EmptyState, ProgressBar, LiveBadge, useToast } from "@/components/ui";
+import { GuildCreateModal } from "@/components/GuildCreateModal";
 import { getLevel, formatCoins } from "@/utils/format";
 import type { Guild } from "@rivalr/shared";
 
@@ -13,7 +14,6 @@ export default function Dashboard() {
   const [guilds, setGuilds] = useState<(Guild & { member_count: number })[]>([]);
   const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
-  const [guildName, setGuildName] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -45,28 +45,6 @@ export default function Dashboard() {
 
     setGuilds(withCounts);
     setLoading(false);
-  }
-
-  async function createGuild() {
-    if (!user || !guildName.trim() || busy) return;
-    setBusy(true);
-    try {
-      const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-      const guild = await firestore.guilds.create({
-        name: guildName.trim(),
-        invite_code: code,
-        created_by: user.id,
-      });
-
-      if (guild) {
-        await firestore.guildMembers.add(guild.id, user.id);
-        setShowCreate(false);
-        toast("Guild created.", "success");
-        navigate(`/guild/${guild.id}`);
-      }
-    } finally {
-      setBusy(false);
-    }
   }
 
   async function joinGuild() {
@@ -142,37 +120,11 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {showCreate && (
-        <form
-          className="surface-card mb-5 flex flex-col gap-3 p-4 animate-slide-down sm:flex-row sm:items-center"
-          onSubmit={(e) => {
-            e.preventDefault();
-            createGuild();
-          }}
-        >
-          <div className="flex-1">
-            <label htmlFor="guild-name" className="mb-1.5 block text-sm font-medium text-navy-200">
-              Guild name
-            </label>
-            <Input
-              id="guild-name"
-              assistiveLabel="Guild name"
-              placeholder="e.g. Form 5 Biology Squad"
-              value={guildName}
-              onChange={(e) => setGuildName(e.target.value)}
-              autoFocus
-            />
-          </div>
-          <div className="flex gap-2 sm:pt-6">
-            <Button size="md" type="submit" disabled={busy || !guildName.trim()}>
-              {busy ? "Creating…" : "Create"}
-            </Button>
-            <Button size="md" variant="ghost" type="button" onClick={() => setShowCreate(false)}>
-              Cancel
-            </Button>
-          </div>
-        </form>
-      )}
+      <GuildCreateModal
+        open={showCreate}
+        onClose={() => setShowCreate(false)}
+        onCreated={(id) => navigate(`/guild/${id}`)}
+      />
 
       {showJoin && (
         <form
