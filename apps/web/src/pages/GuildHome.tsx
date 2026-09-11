@@ -4,7 +4,6 @@ import { useAuth } from "@/lib/auth";
 import { firestore } from "@/lib/firestore";
 import {
   Card,
-  Avatar,
   Tabs,
   StatPill,
   RankBadge,
@@ -19,7 +18,9 @@ import {
 } from "@/components/ui";
 import { formatAccuracy, formatTime, getLevel } from "@/utils/format";
 import { GuildSettings } from "@/components/GuildSettings";
+import { UserCard, resolveEquipped, type EquippedSlots } from "@/components/UserCard";
 import type { Guild, User, QuizAttempt, UserChapterStats } from "@rivalr/shared";
+import type { ShopItem } from "@rivalr/shared";
 
 export default function GuildHome() {
   const { guildId } = useParams<{ guildId: string }>();
@@ -30,6 +31,7 @@ export default function GuildHome() {
   const [chapterStats, setChapterStats] = useState<UserChapterStats[]>([]);
   const [inviteCopied, setInviteCopied] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [slotsMap, setSlotsMap] = useState<Record<string, EquippedSlots>>({});
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -52,6 +54,19 @@ export default function GuildHome() {
         const userIds = memberRows.map((m) => m.user_id as string);
         const users = await firestore.usersBatch.getByIds(userIds);
         setMembers(users as unknown as User[]);
+
+        const [inv, items] = await Promise.all([
+          firestore.userInventory.getForUsers(userIds),
+          firestore.shopItems.getAll() as Promise<ShopItem[]>,
+        ]);
+        const slots: Record<string, EquippedSlots> = {};
+        for (const id of userIds) {
+          slots[id] = resolveEquipped(
+            inv.filter((i) => i.user_id === id) as unknown as { item_id: string; is_equipped: boolean }[],
+            items,
+          );
+        }
+        setSlotsMap(slots);
       }
 
       const quizData = await firestore.quizAttempts.getByGuild(guildId);
@@ -215,15 +230,15 @@ export default function GuildHome() {
         {(activeTab) => (
           <>
             {activeTab === "overview" && (
-              <OverviewTab leaderboard={leaderboard} memberMap={memberMap} currentUserId={user?.id ?? ""} />
+              <OverviewTab leaderboard={leaderboard} memberMap={memberMap} currentUserId={user?.id ?? ""} slotsMap={slotsMap} />
             )}
 
             {activeTab === "rankings" && (
-              <RankingsTab members={members} chapterStats={chapterStats} currentUserId={user?.id ?? ""} />
+              <RankingsTab members={members} chapterStats={chapterStats} currentUserId={user?.id ?? ""} slotsMap={slotsMap} />
             )}
 
             {activeTab === "activity" && (
-              <ActivityTab attempts={sortedAttempts} memberMap={memberMap} />
+              <ActivityTab attempts={sortedAttempts} memberMap={memberMap} slotsMap={slotsMap} />
             )}
 
             {activeTab === "history" && (
@@ -240,10 +255,12 @@ function OverviewTab({
   leaderboard,
   memberMap,
   currentUserId,
+  slotsMap,
 }: {
   leaderboard: { user: User; totalXP: number; totalCorrect: number; totalQuestions: number; quizCount: number }[];
   memberMap: Map<string, User>;
   currentUserId: string;
+  slotsMap: Record<string, EquippedSlots>;
 }) {
   const [showAll, setShowAll] = useState(false);
   const visible = showAll ? leaderboard : leaderboard.slice(0, 8);
@@ -262,23 +279,26 @@ function OverviewTab({
                   i === 0 ? "border-gold" : "border-transparent"
                 }`}
               >
-                <Avatar src={entry.user.avatar_url} name={entry.user.name} size="md" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">
-                    {entry.user.name}
-                    {entry.user.id === currentUserId ? (
-                      <span className="ml-1.5 text-xs text-ink-muted">(you)</span>
-                    ) : null}
-                  </p>
-                  <div className="mt-0.5 flex items-center gap-2">
+                <Link to={`/profile/${entry.user.id}`} className="flex min-w-0 flex-1 items-center gap-3">
+                  <UserCard
+                    name={entry.user.name}
+                    avatarUrl={entry.user.avatar_url}
+                    size="md"
+                    slots={slotsMap[entry.user.id]}
+                    showTauntOnAvatar
+                  />
+                  <div className="flex items-center gap-2">
                     <span className="inline-flex items-center rounded-md border border-line bg-panel px-1.5 py-0.5 text-[11px] font-medium text-ink-soft">
                       Lv {level}
                     </span>
                     <span className="font-mono text-[11px] tabular-nums text-ink-muted">
                       {formatAccuracy(entry.totalCorrect, entry.totalQuestions)}
                     </span>
+                    {entry.user.id === currentUserId ? (
+                      <span className="text-[11px] text-ink-muted">(you)</span>
+                    ) : null}
                   </div>
-                </div>
+                </Link>
               </div>
             );
           })}
@@ -296,10 +316,16 @@ function OverviewTab({
               }`}
             >
               <RankBadge rank={i} />
-              <Avatar src={entry.user.avatar_url} name={entry.user.name} size="md" />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{entry.user.name}</p>
-                <p className="text-xs text-ink-muted">
+                <Link to={`/profile/${entry.user.id}`}>
+                  <UserCard
+                    name={entry.user.name}
+                    avatarUrl={entry.user.avatar_url}
+                    size="md"
+                    slots={slotsMap[entry.user.id]}
+                  />
+                </Link>
+                <p className="mt-1 text-xs text-ink-muted">
                   {entry.quizCount} quizzes · {formatAccuracy(entry.totalCorrect, entry.totalQuestions)}
                 </p>
               </div>
@@ -332,6 +358,7 @@ function OverviewTab({
 function RankedTable({
   rows,
   currentUserId,
+  slotsMap,
 }: {
   rows: {
     userId: string;
@@ -343,6 +370,7 @@ function RankedTable({
     xp: number;
   }[];
   currentUserId: string;
+  slotsMap: Record<string, EquippedSlots>;
 }) {
   return (
     <div className="overflow-x-auto rounded-lg border border-line">
@@ -370,8 +398,15 @@ function RankedTable({
                 <td className="px-4 py-3">
                   <RankBadge rank={i} />
                 </td>
-                <td className="px-4 py-3 font-medium">
-                  {row.user?.name ?? "—"}
+                <td className="px-4 py-3">
+                  <Link to={`/profile/${row.userId}`} className="inline-flex w-full items-center gap-3">
+                    <UserCard
+                      name={row.user?.name ?? "—"}
+                      avatarUrl={row.user?.avatar_url ?? null}
+                      size="md"
+                      slots={slotsMap[row.userId]}
+                    />
+                  </Link>
                   {isMe ? <span className="ml-1.5 text-xs text-volt">(you)</span> : null}
                 </td>
                 <td className="px-4 py-3 font-mono tabular-nums text-ink-muted">{row.attempts}</td>
@@ -400,10 +435,12 @@ function RankingsTab({
   members,
   chapterStats,
   currentUserId,
+  slotsMap,
 }: {
   members: User[];
   chapterStats: UserChapterStats[];
   currentUserId: string;
+  slotsMap: Record<string, EquippedSlots>;
 }) {
   const [subject, setSubject] = useState<string>("Biology");
   const [chapterNum, setChapterNum] = useState<number | null>(null);
@@ -534,7 +571,7 @@ function RankingsTab({
       ) : null}
 
       {chapterNum !== null && difficulty !== null ? (
-        <RankedTable rows={ranked} currentUserId={currentUserId} />
+        <RankedTable rows={ranked} currentUserId={currentUserId} slotsMap={slotsMap} />
       ) : chapterNum !== null ? (
         <p className="text-sm text-ink-muted">Pick a difficulty to see rankings.</p>
       ) : (
@@ -547,9 +584,11 @@ function RankingsTab({
 function ActivityTab({
   attempts,
   memberMap,
+  slotsMap,
 }: {
   attempts: QuizAttempt[];
   memberMap: Map<string, User>;
+  slotsMap: Record<string, EquippedSlots>;
 }) {
   const [visible, setVisible] = useState(20);
 
@@ -567,27 +606,36 @@ function ActivityTab({
         {attempts.slice(0, visible).map((a) => {
           const m = memberMap.get(a.user_id);
           return (
-            <div key={a.id} className="flex items-center gap-3 border-b border-line py-3 first:pt-0 last:border-0">
-              <Avatar src={m?.avatar_url ?? null} name={m?.name ?? "?"} size="sm" />
-              <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
-                <p className="text-sm text-ink">
-                  <span className="font-medium">{m?.name}</span>{" "}
-                  <span className="text-ink-muted">
+            <div
+              key={a.id}
+              className="flex flex-col border-b border-line py-3 first:pt-0 last:border-0"
+            >
+              <div className="flex items-center gap-3">
+                <Link to={`/profile/${a.user_id}`} className="inline-flex shrink-0">
+                  <UserCard
+                    name={m?.name ?? "?"}
+                    avatarUrl={m?.avatar_url ?? null}
+                    size="sm"
+                    slots={slotsMap[a.user_id]}
+                  />
+                </Link>
+                <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+                  <p className="text-sm text-ink-muted">
                     scored {a.correct_answers}/{a.total_questions} on
-                  </span>
-                </p>
-                <SubjectPill subject={a.subject} />
-                <ChapterBadge form={a.form} chapterNum={a.chapter_number} chapterName={a.chapter_name} />
-                <DifficultyBadge difficulty={a.difficulty} />
+                  </p>
+                  <SubjectPill subject={a.subject} />
+                  <ChapterBadge form={a.form} chapterNum={a.chapter_number} chapterName={a.chapter_name} />
+                  <DifficultyBadge difficulty={a.difficulty} />
+                </div>
+                <span className="ml-auto shrink-0 text-xs tabular-nums text-ink-faint">
+                  {new Date(a.completed_at).toLocaleString(undefined, {
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
               </div>
-              <span className="ml-auto shrink-0 text-xs tabular-nums text-ink-faint">
-                {new Date(a.completed_at).toLocaleString(undefined, {
-                  month: "short",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </span>
             </div>
           );
         })}

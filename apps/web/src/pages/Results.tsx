@@ -1,15 +1,19 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { useAuth } from "@/lib/auth";
 import { firestore } from "@/lib/firestore";
 import { Card, Button, Icon, StatPill, LoadingScreen, FormulaText, type IconName } from "@/components/ui";
+import { UserCard, resolveEquipped, type EquippedSlots } from "@/components/UserCard";
 import { formatTime, formatCoins, formatAccuracy } from "@/utils/format";
-import type { QuizAttempt } from "@rivalr/shared";
+import type { QuizAttempt, ShopItem } from "@rivalr/shared";
 
 export default function Results() {
   const { guildId, quizId } = useParams<{ guildId: string; quizId: string }>();
+  const { user } = useAuth();
   const [attempt, setAttempt] = useState<QuizAttempt | null>(null);
   const [loading, setLoading] = useState(true);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [flexSlots, setFlexSlots] = useState<EquippedSlots | null>(null);
 
   useEffect(() => {
     if (!quizId) return;
@@ -18,6 +22,19 @@ export default function Results() {
       setLoading(false);
     });
   }, [quizId]);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const [inv, items] = await Promise.all([
+        firestore.userInventory.getForUsers([user.id]),
+        firestore.shopItems.getAll() as Promise<ShopItem[]>,
+      ]);
+      setFlexSlots(
+        resolveEquipped(inv as unknown as { item_id: string; is_equipped: boolean }[], items),
+      );
+    })();
+  }, [user]);
 
   if (loading || !attempt) {
     return <LoadingScreen label="Loading results…" />;
@@ -37,6 +54,11 @@ export default function Results() {
   return (
     <div className="mx-auto max-w-2xl animate-fade-in">
       <div className="mb-8 text-center">
+        {user ? (
+          <div className="mb-4 flex justify-center">
+            <UserCard name={user.name} avatarUrl={user.avatar_url} size="lg" slots={flexSlots ?? undefined} />
+          </div>
+        ) : null}
         <div className={`mx-auto mb-6 inline-flex h-16 w-16 items-center justify-center rounded-lg ring-1 ${result.tint}`}>
           <Icon name={result.icon} size={30} strokeWidth={1.5} />
         </div>
