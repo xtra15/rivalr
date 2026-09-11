@@ -8,11 +8,11 @@ import {
   StatPill,
   Tabs,
   CoinBalance,
-  Badge,
   Icon,
   Button,
   EmptyState,
   achievementIcon,
+  type IconName,
 } from "@/components/ui";
 import { getLevel, formatAccuracy, formatCoins } from "@/utils/format";
 import type { UserSubjectStats, UserAchievement, ShopItem } from "@rivalr/shared";
@@ -277,50 +277,57 @@ const CATEGORY_LABELS: Record<string, string> = {
   sound_effect: "Sound effect",
   quiz_theme: "Quiz theme",
   taunt: "Taunt",
+  title: "Title",
+  name_glow: "Name glow",
 };
 
-function EquippedTab({ equipped }: { equipped: { item: ShopItem; purchased_at: string }[] }) {
-  if (equipped.length === 0) {
-    return (
-      <div className="animate-fade-in">
-        <EmptyState
-          icon="bag"
-          title="Nothing equipped"
-          description="Buy items in the shop and equip them here."
-          action={
-            <Link to="/shop">
-              <Badge variant="info">Visit shop</Badge>
-            </Link>
-          }
-        />
-      </div>
-    );
-  }
+const ALL_CATEGORIES = ["avatar_frame", "name_glow", "title", "taunt", "quiz_theme", "sound_effect"] as const;
 
+function EquippedTab({ equipped }: { equipped: { item: ShopItem; purchased_at: string }[] }) {
+  const byCat = new Map(equipped.map((e) => [e.item.category, e]));
   return (
     <div className="space-y-2.5 animate-fade-in">
-      {equipped.map(({ item }) => (
-        <Card key={item.id} className="flex items-center gap-4 p-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-overpanel text-volt">
-            <Icon name={item.category === "taunt" ? "flame" : item.category === "quiz_theme" ? "target" : item.category === "sound_effect" ? "play" : "user"} size={20} />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium">{item.name}</p>
-            <p className="text-xs text-ink-muted">
-              {CATEGORY_LABELS[item.category] ?? item.category} · {formatCoins(item.coin_cost)}
-            </p>
-            {item.preview_data && item.category === "taunt" ? (
-              <p className="mt-1 text-lg leading-none">{item.preview_data}</p>
-            ) : null}
-          </div>
-          <Link
-            to="/shop"
-            className="shrink-0 text-sm font-medium text-volt transition-colors hover:text-volt-soft"
-          >
-            Change
-          </Link>
-        </Card>
-      ))}
+      {ALL_CATEGORIES.map((cat) => {
+        const entry = byCat.get(cat);
+        const icon: IconName =
+          cat === "taunt" ? "flame" : cat === "quiz_theme" ? "target" : cat === "sound_effect" ? "play" : cat === "title" ? "star" : cat === "name_glow" ? "crown" : "user";
+        return (
+          <Card key={cat} className="flex items-center gap-4 p-4">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-overpanel text-volt">
+              <Icon name={icon} size={20} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium">{CATEGORY_LABELS[cat]}</p>
+              {entry ? (
+                <>
+                  <p className="text-xs text-ink-muted">
+                    {entry.item.name} · {formatCoins(entry.item.coin_cost)}
+                  </p>
+                  {entry.item.preview_data && (cat === "taunt" || cat === "title") ? (
+                    <p className="mt-1 text-lg leading-none">{entry.item.preview_data}</p>
+                  ) : null}
+                  {entry.item.preview_data && cat === "name_glow" ? (
+                    <p
+                      className="mt-1 text-lg font-bold"
+                      style={{ color: entry.item.preview_data.startsWith("#") ? entry.item.preview_data : "inherit" }}
+                    >
+                      {entry.item.preview_data.startsWith("#") ? "Aa" : entry.item.preview_data}
+                    </p>
+                  ) : null}
+                </>
+              ) : (
+                <p className="text-xs text-ink-faint">Not equipped</p>
+              )}
+            </div>
+            <Link
+              to="/shop"
+              className="shrink-0 text-sm font-medium text-volt transition-colors hover:text-volt-soft"
+            >
+              Change
+            </Link>
+          </Card>
+        );
+      })}
     </div>
   );
 }

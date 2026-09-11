@@ -10,13 +10,17 @@ const CATEGORY_LABELS: Record<string, string> = {
   sound_effect: "Sound Effects",
   quiz_theme: "Quiz Themes",
   taunt: "Taunt Stickers",
+  title: "Titles",
+  name_glow: "Name Glow",
 };
 
-const CATEGORY_ICONS: Record<string, "user" | "play" | "target" | "flame"> = {
+const CATEGORY_ICONS: Record<string, "user" | "play" | "target" | "flame" | "star" | "crown"> = {
   avatar_frame: "user",
   sound_effect: "play",
   quiz_theme: "target",
   taunt: "flame",
+  title: "star",
+  name_glow: "crown",
 };
 
 export default function Shop() {
@@ -223,6 +227,17 @@ function Preview({ item }: { item: ShopItem }) {
             <Icon name="flame" size={24} />
           </span>
         )
+      ) : item.category === "title" ? (
+        <span className="text-xs font-semibold uppercase tracking-wide text-volt">
+          {item.preview_data || "Title"}
+        </span>
+      ) : item.category === "name_glow" ? (
+        <span
+          className="text-sm font-bold"
+          style={{ color: item.preview_data ?? "#C9F73A", textShadow: `0 0 10px ${item.preview_data ?? "#C9F73A"}66` }}
+        >
+          Sample name
+        </span>
       ) : (
         <span className="text-xs text-ink-muted">{item.category}</span>
       )}
