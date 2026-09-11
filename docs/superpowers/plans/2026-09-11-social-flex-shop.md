@@ -1,4 +1,4 @@
-title: "Social Flex Shop — Full Accessory Expansion"
+﻿title: "Social Flex Shop â€” Full Accessory Expansion"
 date: 2026-09-11
 plan-file: 2026-09-11-social-flex-shop.md
 spec: ../../specs/2026-09-11-social-flex-shop-design.md
@@ -10,26 +10,26 @@ spec: ../../specs/2026-09-11-social-flex-shop-design.md
 
 **Goal:** Turn the rivalr shop into a six-category social flex system with public profiles, custom WebP taunt uploads validated and stored in Cloudflare R2, and global image compression.
 
-**Architecture:** Three phases. (A) Display layer: public profiles, a shared `UserCard` that renders equipped frame/glow/title everywhere, and two new shop categories (`title`, `name_glow`). (B) Upload pipeline: browser re-encodes GIF→WebP (static v1), worker verifies the Firebase ID token via jose + Google certs, validates magic bytes/dims/size, stores in R2, client writes its own `user_custom_taunts` Firestore doc (rules-scoped to `request.auth.uid`). (C) Quiz accessories: CSS-var theme + Web-Audio sound effects. Asset pipeline uses one shared `compressImage()` util.
+**Architecture:** Three phases. (A) Display layer: public profiles, a shared `UserCard` that renders equipped frame/glow/title everywhere, and two new shop categories (`title`, `name_glow`). (B) Upload pipeline: browser re-encodes GIFâ†’WebP (static v1), worker verifies the Firebase ID token via jose + Google certs, validates magic bytes/dims/size, stores in R2, client writes its own `user_custom_taunts` Firestore doc (rules-scoped to `request.auth.uid`). (C) Quiz accessories: CSS-var theme + Web-Audio sound effects. Asset pipeline uses one shared `compressImage()` util.
 
 **Tech Stack:** React 19 + Vite + Firebase (web), Cloudflare Workers + R2 + KV (worker), `jose` for token verification, Firestore rules.
 
 ## Global Constraints
 
 - **No test framework in this repo.** Verification for each task = `npm run typecheck --workspace=apps/web`, `npm run build --workspace=apps/web`, and `npx wrangler deploy --dry-run` (in `apps/worker`) + a manual smoke step. Do not invent a test harness unless the repo already has one.
-- **Custom taunt v1 is STATIC WebP** — browsers cannot natively encode animated WebP. `compressImage` re-encodes a single frame via `canvas.toBlob("image/webp")`. Animated GIFs show their first frame. Animated taunts remain shop-bought assets only.
-- **Custom taunt hard limits:** input file ≤ 8 MB, output ≤ 512 KB, output dims ≤ 512×512, output format `image/webp` (JPEG fallback if WebP unsupported).
+- **Custom taunt v1 is STATIC WebP** â€” browsers cannot natively encode animated WebP. `compressImage` re-encodes a single frame via `canvas.toBlob("image/webp")`. Animated GIFs show their first frame. Animated taunts remain shop-bought assets only.
+- **Custom taunt hard limits:** input file â‰¤ 8 MB, output â‰¤ 512 KB, output dims â‰¤ 512Ã—512, output format `image/webp` (JPEG fallback if WebP unsupported).
 - **Firestore rules additions** must be merged into `firestore.rules` with the existing `service cloud.firestore` block; publish live via `npx firebase deploy --only firestore:rules --project rivalr-f5436`.
 - **Worker auth:** every mutating taunt endpoint requires `Authorization: Bearer <Firebase ID token>`; the worker verifies with jose against Google's securetoken certs. Custom taunt metadata is written by the **web client** (already Firebase-authenticated), NOT the worker, to avoid adding a service account.
 - **R2 bucket:** binding name `TAUNTS_R2`, bucket name `rivalr-taunts`. Create once: `npx wrangler r2 bucket create rivalr-taunts` (in `apps/worker`).
-- **Icons available for new categories:** `title` → `"star"`, `name_glow` → `"crown"` (both exist in `Icon.tsx`).
+- **Icons available for new categories:** `title` â†’ `"star"`, `name_glow` â†’ `"crown"` (both exist in `Icon.tsx`).
 - **Quick reference:** worker API base is `VITE_API_URL` in web (`.env`). Console = Firebase Console.
 
 ---
 
-# Phase A — Display & Flex Layer
+# Phase A â€” Display & Flex Layer
 
-### Task 1: Shared types — new categories, `PublicUser`, `CustomTaunt`
+### Task 1: Shared types â€” new categories, `PublicUser`, `CustomTaunt`
 
 **Files:**
 - Modify: `packages/shared/src/types.ts:72-79`
@@ -38,7 +38,7 @@ spec: ../../specs/2026-09-11-social-flex-shop-design.md
 **Interfaces:**
 - Produces: `ShopItem.category` union now includes `"title" | "name_glow"`; new `PublicUser`, `CustomTaunt` interfaces used by later tasks.
 
-- [ ] **Step 1: Widen the `ShopItem.category` union and add new types**
+- [x] **Step 1: Widen the `ShopItem.category` union and add new types**
 
 ```ts
 export interface ShopItem {
@@ -73,12 +73,12 @@ export interface CustomTaunt {
 }
 ```
 
-- [ ] **Step 2: Verify web still typechecks**
+- [x] **Step 2: Verify web still typechecks**
 
 Run: `npm run typecheck --workspace=apps/web`
 Expected: PASS (widening a union is non-breaking; the web app compiles unchanged).
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add packages/shared/src/types.ts
@@ -96,7 +96,7 @@ git commit -m "feat: widen shop categories, add PublicUser and CustomTaunt types
 - Consumes: `PublicUser`, `CustomTaunt` from Task 1.
 - Produces: `users.getPublic(userId): Promise<PublicUser | null>`, `customTaunts.get(userId)`, `customTaunts.set(userId, data)`, `customTaunts.delete`, `userInventory.getForUsers(userIds): Promise<(Record<string, unknown> & { id: string })[]>`.
 
-- [ ] **Step 1: Add `users.getPublic` (privacy gate)**
+- [x] **Step 1: Add `users.getPublic` (privacy gate)**
 
 Insert inside the `users: { ... }` object, after `get` (line 51):
 
@@ -112,7 +112,7 @@ async getPublic(userId: string) {
 
 Add `PublicUser` to the imports: `import type { PublicUser, CustomTaunt } from "@rivalr/shared";` (top of file).
 
-- [ ] **Step 2: Add `customTaunts` + `userInventory.getForUsers`**
+- [x] **Step 2: Add `customTaunts` + `userInventory.getForUsers`**
 
 Append after the `userInventory` object (end of the `firestore` export, before the closing `};` at line 278):
 
@@ -154,12 +154,12 @@ Append after the `userInventory` object (end of the `firestore` export, before t
 
 Note: `userInventory` already exists (line 250); add `getForUsers` inside its existing `{ }` block rather than creating a duplicate key.
 
-- [ ] **Step 3: Typecheck**
+- [x] **Step 3: Typecheck**
 
 Run: `npm run typecheck --workspace=apps/web`
 Expected: PASS.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add apps/web/src/lib/firestore.ts
@@ -168,7 +168,7 @@ git commit -m "feat: add getPublic, customTaunts and bulk inventory reads"
 
 ---
 
-### Task 3: `UserCard` — unified flex rendering
+### Task 3: `UserCard` â€” unified flex rendering
 
 **Files:**
 - Create: `apps/web/src/components/UserCard.tsx`
@@ -186,7 +186,7 @@ export interface EquippedSlots {
 }
 ```
 
-- [ ] **Step 1: Write the component**
+- [x] **Step 1: Write the component**
 
 `apps/web/src/components/UserCard.tsx`:
 
@@ -296,16 +296,16 @@ export function UserCard({ name, avatarUrl, size = "md", slots, userId, showTaun
 }
 ```
 
-- [ ] **Step 2: Export from the UI barrel**
+- [x] **Step 2: Export from the UI barrel**
 
 In `apps/web/src/components/ui/index.ts`, add `export { UserCard } from "@/components/UserCard";` (check existing barrel export style first and match it, e.g. relative path like the other `.tsx` exports).
 
-- [ ] **Step 3: Typecheck + lint**
+- [x] **Step 3: Typecheck + lint**
 
 Run: `npm run typecheck --workspace=apps/web; if ($?) { npm run lint --workspace=apps/web }`
 Expected: PASS.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add apps/web/src/components/UserCard.tsx apps/web/src/components/ui/index.ts
@@ -324,7 +324,7 @@ git commit -m "feat: add UserCard flex rendering (frame, glow, title)"
 - Consumes: `firestore.users.getPublic`, `firestore.userInventory.getForUsers`, `firestore.shopItems.getAll`, `resolveEquipped`, `UserCard`.
 - Produces: `/profile/:userId` route (used by Task 5 links).
 
-- [ ] **Step 1: Write the page**
+- [x] **Step 1: Write the page**
 
 `apps/web/src/pages/ProfilePublic.tsx`:
 
@@ -366,7 +366,7 @@ export default function ProfilePublic() {
     })();
   }, [userId]);
 
-  if (loading) return <LoadingScreen label="Loading profile…" />;
+  if (loading) return <LoadingScreen label="Loading profileâ€¦" />;
 
   if (notFound) {
     return (
@@ -430,7 +430,7 @@ export default function ProfilePublic() {
 }
 ```
 
-- [ ] **Step 2: Add the route to `App.tsx`**
+- [x] **Step 2: Add the route to `App.tsx`**
 
 ```tsx
 <Route path="/profile/:userId" element={<ProfilePublic />} />
@@ -438,12 +438,12 @@ export default function ProfilePublic() {
 
 placed next to `<Route path="/profile" element={<Profile />} />` (line 29). Add `import ProfilePublic from "@/pages/ProfilePublic";`.
 
-- [ ] **Step 3: Typecheck + build**
+- [x] **Step 3: Typecheck + build**
 
 Run: `npm run typecheck --workspace=apps/web; if ($?) { npm run build --workspace=apps/web }`
 Expected: PASS.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add apps/web/src/pages/ProfilePublic.tsx apps/web/src/App.tsx
@@ -462,7 +462,7 @@ git commit -m "feat: add public profile page at /profile/:userId"
 - Consumes: `UserCard`, `resolveEquipped`, `EquippedSlots`.
 - Produces: name links to `/profile/:userId` from Overview members list, Overview standings, Rankings table, Activity feed.
 
-- [ ] **Step 1: Batch-load slots in `GuildHome`**
+- [x] **Step 1: Batch-load slots in `GuildHome`**
 
 Import `UserCard, resolveEquipped` and add state:
 
@@ -488,9 +488,9 @@ if (memberRows.length) {
 }
 ```
 
-- [ ] **Step 2: Replace avatars/names with `UserCard` and links**
+- [x] **Step 2: Replace avatars/names with `UserCard` and links**
 
-Overview members list (lines 258-284): replace the `<Avatar …/>` + name `<p>` block with:
+Overview members list (lines 258-284): replace the `<Avatar â€¦/>` + name `<p>` block with:
 
 ```tsx
 <Link to={`/profile/${entry.user.id}`} className="min-w-0 flex-1">
@@ -505,25 +505,25 @@ Overview members list (lines 258-284): replace the `<Avatar …/>` + name `<p>` 
 
 Add level/accuracy row back beneath the `UserCard` using the existing styling (keep the `(you)` marker inside the name line where it was). Remove the standalone `<Avatar>` next to it.
 
-Overview standings card (lines 291-310): keep `RankBadge`, replace `<Avatar …/>` and the name `<p>` with `<UserCard …/>` inside a `<Link to={`/profile/${entry.user.id}`}>`; keep the quiz-count line and XP column.
+Overview standings card (lines 291-310): keep `RankBadge`, replace `<Avatar â€¦/>` and the name `<p>` with `<UserCard â€¦/>` inside a `<Link to={`/profile/${entry.user.id}`}>`; keep the quiz-count line and XP column.
 
 Rankings table name cell (lines 373-375): replace with:
 
 ```tsx
 <td className="px-4 py-3">
   <Link to={`/profile/${row.userId}`} className="min-w-0">
-    <UserCard name={row.user?.name ?? "—"} avatarUrl={row.user?.avatar_url ?? null} slots={slotsMap[row.userId]} />
+    <UserCard name={row.user?.name ?? "â€”"} avatarUrl={row.user?.avatar_url ?? null} slots={slotsMap[row.userId]} />
   </Link>
 </td>
 ```
 
-Activity feed (Task 5, but the `img` custom taunt comes in Task 11): replace the `<Avatar …>` + name `<p>` (lines 571-574) with a `UserCard` wrapped in `<Link to={`/profile/${(m?.id ?? a.user_id)}`}>` using `slotsMap`, keep the rest of the row.
+Activity feed (Task 5, but the `img` custom taunt comes in Task 11): replace the `<Avatar â€¦>` + name `<p>` (lines 571-574) with a `UserCard` wrapped in `<Link to={`/profile/${(m?.id ?? a.user_id)}`}>` using `slotsMap`, keep the rest of the row.
 
 Add `import { Link }` is already imported. Add `import type { EquippedSlots } from "@/components/UserCard";`.
 
-- [ ] **Step 3: Add `UserCard` to the Results page header**
+- [x] **Step 3: Add `UserCard` to the Results page header**
 
-In `Results.tsx`, above the main score heading, render the current user's flex (no identity fields needed — quiz attempt has no name):
+In `Results.tsx`, above the main score heading, render the current user's flex (no identity fields needed â€” quiz attempt has no name):
 
 ```tsx
 import { useAuth } from "@/lib/auth";
@@ -551,12 +551,12 @@ Then render in the results header (before the `<h1>`):
 </div>
 ```
 
-- [ ] **Step 4: Typecheck + build**
+- [x] **Step 4: Typecheck + build**
 
 Run: `npm run typecheck --workspace=apps/web; if ($?) { npm run build --workspace=apps/web }`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/web/src/pages/GuildHome.tsx apps/web/src/pages/Results.tsx
@@ -575,7 +575,7 @@ git commit -m "feat: apply flex rendering and profile links across guild surface
 - Consumes: nothing new.
 - Produces: `title`/`name_glow` tabs in Shop, preview rendering, and 6-slot equipped list in Profile.
 
-- [ ] **Step 1: Shop category labels/icons**
+- [x] **Step 1: Shop category labels/icons**
 
 Replace `CATEGORY_LABELS` + `CATEGORY_ICONS` (lines 8-20):
 
@@ -599,7 +599,7 @@ const CATEGORY_ICONS: Record<string, "user" | "play" | "target" | "flame" | "sta
 };
 ```
 
-- [ ] **Step 2: Shop `Preview` for new categories**
+- [x] **Step 2: Shop `Preview` for new categories**
 
 In `Preview`, before the final `else` fallback, add:
 
@@ -618,7 +618,7 @@ In `Preview`, before the final `else` fallback, add:
 ) : (
 ```
 
-- [ ] **Step 3: Profile equipped list — 6 fixed slots + labels**
+- [x] **Step 3: Profile equipped list â€” 6 fixed slots + labels**
 
 Replace `CATEGORY_LABELS` in `Profile.tsx` (line 275):
 
@@ -633,7 +633,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 ```
 
-Replace the `EquippedTab` empty-state (lines 283-298) with a "All 6 slots" grid that always shows 6 rows (empty → "Not equipped" muted row):
+Replace the `EquippedTab` empty-state (lines 283-298) with a "All 6 slots" grid that always shows 6 rows (empty â†’ "Not equipped" muted row):
 
 ```tsx
 const ALL_CATEGORIES = ["avatar_frame", "name_glow", "title", "taunt", "quiz_theme", "sound_effect"] as const;
@@ -653,7 +653,7 @@ function EquippedTab({ equipped }: { equipped: { item: ShopItem; purchased_at: s
               <p className="text-sm font-medium">{CATEGORY_LABELS[cat]}</p>
               {entry ? (
                 <>
-                  <p className="text-xs text-ink-muted">{entry.item.name} · {formatCoins(entry.item.coin_cost)}</p>
+                  <p className="text-xs text-ink-muted">{entry.item.name} Â· {formatCoins(entry.item.coin_cost)}</p>
                   {entry.item.preview_data && (cat === "taunt" || cat === "title") ? (
                     <p className="mt-1 text-lg leading-none">{entry.item.preview_data}</p>
                   ) : null}
@@ -680,25 +680,25 @@ function EquippedTab({ equipped }: { equipped: { item: ShopItem; purchased_at: s
 
 Delete the old empty `EquippedTab` branch and old map body (lines 300-326).
 
-- [ ] **Step 4: Typecheck + build**
+- [x] **Step 4: Typecheck + build**
 
 Run: `npm run typecheck --workspace=apps/web; if ($?) { npm run build --workspace=apps/web }`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/web/src/pages/Shop.tsx apps/web/src/pages/Profile.tsx
 git commit -m "feat: add title and name glow categories to shop and profile"
 ```
 
-**Phase A complete milestone:** deploy web — `npm run deploy --workspace=apps/web` is not defined; use `npx vercel --prod` from `apps/web` if the project has remote configured, otherwise `npm run build --workspace=apps/web` and note manual deploy. (Consult repo history for the exact web deploy command and reuse it.)
+**Phase A complete milestone:** deploy web â€” `npm run deploy --workspace=apps/web` is not defined; use `npx vercel --prod` from `apps/web` if the project has remote configured, otherwise `npm run build --workspace=apps/web` and note manual deploy. (Consult repo history for the exact web deploy command and reuse it.)
 
 ---
 
-# Phase B — Custom Taunt Upload Pipeline
+# Phase B â€” Custom Taunt Upload Pipeline
 
-### Task 7: Worker — Firebase token verification + R2 binding
+### Task 7: Worker â€” Firebase token verification + R2 binding
 
 **Files:**
 - Modify: `apps/worker/package.json` (add `jose`)
@@ -710,14 +710,14 @@ git commit -m "feat: add title and name glow categories to shop and profile"
 - Consumes: nothing.
 - Produces: `verifyFirebaseToken(token: string, projectId: string): Promise<{ uid: string }>` used by Task 8; `Env.TAUNTS_R2`, `Env.FIREBASE_PROJECT_ID`.
 
-- [ ] **Step 1: Add the `jose` dependency**
+- [x] **Step 1: Add the `jose` dependency**
 
 Run (in `apps/worker`): `npm i jose`
 Expected: added to `dependencies`.
 
-- [ ] **Step 2: R2 binding + project id var**
+- [x] **Step 2: R2 binding + project id var**
 
-`apps/worker/wrangler.toml` — append:
+`apps/worker/wrangler.toml` â€” append:
 
 ```toml
 [[r2_buckets]]
@@ -728,7 +728,7 @@ bucket_name = "rivalr-taunts"
 FIREBASE_PROJECT_ID = "rivalr-f5436"
 ```
 
-- [ ] **Step 3: Env type**
+- [x] **Step 3: Env type**
 
 `apps/worker/src/types.ts`:
 
@@ -742,7 +742,7 @@ export interface Env {
 }
 ```
 
-- [ ] **Step 4: Token verifier**
+- [x] **Step 4: Token verifier**
 
 `apps/worker/src/lib/verify.ts`:
 
@@ -800,7 +800,7 @@ Expected: `Created bucket 'rivalr-taunts'`.
 Run: `npx wrangler deploy --dry-run` (in `apps/worker`)
 Expected: Bundling succeeds, no TS errors.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add apps/worker/package.json apps/worker/wrangler.toml apps/worker/src/types.ts apps/worker/src/lib/verify.ts
@@ -809,7 +809,7 @@ git commit -m "feat: worker firebase token verification and R2 binding"
 
 ---
 
-### Task 8: Worker — WebP validator, taunts route, sfx route, routing
+### Task 8: Worker â€” WebP validator, taunts route, sfx route, routing
 
 **Files:**
 - Create: `apps/worker/src/lib/webp.ts`
@@ -820,12 +820,12 @@ git commit -m "feat: worker firebase token verification and R2 binding"
 **Interfaces:**
 - Consumes: `verifyFirebaseToken`, `Env.TAUNTS_R2`, `Env.FIREBASE_PROJECT_ID`.
 - Produces:
-  - `POST /api/taunts` (Authorization) → `{ sha256, size, asset_key }`
-  - `DELETE /api/taunts` (Authorization) → `{ ok: true }`
-  - `GET /api/taunts/:uid/:file` → WebP bytes with `Content-Type: image/webp`, `X-Content-Type-Options: nosniff`, `Cache-Control: public, max-age=604800`
-  - `GET /api/sfx/:key` → `audio/mpeg` bytes (404 if absent)
+  - `POST /api/taunts` (Authorization) â†’ `{ sha256, size, asset_key }`
+  - `DELETE /api/taunts` (Authorization) â†’ `{ ok: true }`
+  - `GET /api/taunts/:uid/:file` â†’ WebP bytes with `Content-Type: image/webp`, `X-Content-Type-Options: nosniff`, `Cache-Control: public, max-age=604800`
+  - `GET /api/sfx/:key` â†’ `audio/mpeg` bytes (404 if absent)
 
-- [ ] **Step 1: WebP validator**
+- [x] **Step 1: WebP validator**
 
 `apps/worker/src/lib/webp.ts`:
 
@@ -869,7 +869,7 @@ export function validateWebP(bytes: Uint8Array, maxDim = 512): ValidationResult 
 }
 ```
 
-- [ ] **Step 2: Taunts route**
+- [x] **Step 2: Taunts route**
 
 `apps/worker/src/routes/taunts.ts`:
 
@@ -945,7 +945,7 @@ async function handleServe(request: Request, env: Env, path: string): Promise<Re
 }
 ```
 
-Wait — the `file` in `key` already contains `{uid}/{sha}.webp`, so `taunts/${uid}/${sha}` double-prefixes. Fix: parse uid and file, then key = `taunts/${uid}/${file}`:
+Wait â€” the `file` in `key` already contains `{uid}/{sha}.webp`, so `taunts/${uid}/${sha}` double-prefixes. Fix: parse uid and file, then key = `taunts/${uid}/${file}`:
 
 ```ts
   const m = /^\/api\/taunts\/([^/]+)\/(.+)$/.exec(path);
@@ -956,7 +956,7 @@ Wait — the `file` in `key` already contains `{uid}/{sha}.webp`, so `taunts/${u
 
 Use this version in the final file.
 
-- [ ] **Step 3: SFX route**
+- [x] **Step 3: SFX route**
 
 `apps/worker/src/routes/sfx.ts`:
 
@@ -979,14 +979,14 @@ export async function handleSfx(request: Request, env: Env, path: string): Promi
 }
 ```
 
-- [ ] **Step 4: Wire routing + CORS in `index.ts`**
+- [x] **Step 4: Wire routing + CORS in `index.ts`**
 
 ```ts
 import { handleTaunts } from "./routes/taunts";
 import { handleSfx } from "./routes/sfx";
 ```
 
-CORS (lines 10-14 →):
+CORS (lines 10-14 â†’):
 
 ```ts
 const corsHeaders = {
@@ -996,7 +996,7 @@ const corsHeaders = {
 };
 ```
 
-Routing block (lines 23-28 →):
+Routing block (lines 23-28 â†’):
 
 ```ts
 if (path === "/api/questions" && request.method === "POST") {
@@ -1014,7 +1014,7 @@ if (path === "/api/questions" && request.method === "POST") {
 
 Note: the GET serve path must not be caught by the 404 for `/api/health`... it isn't; order is fine.
 
-- [ ] **Step 5: Dry-run deploy**
+- [x] **Step 5: Dry-run deploy**
 
 Run: `npx wrangler deploy --dry-run` (in `apps/worker`)
 Expected: Bundling succeeds.
@@ -1029,7 +1029,7 @@ git commit -m "feat: worker taunt upload/serve and sfx routes with R2"
 
 ---
 
-### Task 9: Web — `compressImage` + taunt API client
+### Task 9: Web â€” `compressImage` + taunt API client
 
 **Files:**
 - Create: `apps/web/src/lib/compressImage.ts`
@@ -1039,7 +1039,7 @@ git commit -m "feat: worker taunt upload/serve and sfx routes with R2"
 - Consumes: `VITE_API_URL`.
 - Produces: `compressImage(file: File): Promise<Blob>` (throws `Error` with a `code` on `"too-large"` / `"unsupported"` / `"unreadable"`), `api.uploadTaunt(blob: Blob): Promise<{ sha256: string; size: number; asset_key: string }>`, `api.deleteTaunt()`, `api.tauntAssetUrl(uid: string, file: string): string`, `api.sfxUrl(key: string): string`. Uses the current Firebase ID token.
 
-- [ ] **Step 1: Write `compressImage`**
+- [x] **Step 1: Write `compressImage`**
 
 `apps/web/src/lib/compressImage.ts`:
 
@@ -1098,10 +1098,10 @@ async function canvasToWebP(canvas: HTMLCanvasElement, maxBytes: number): Promis
 
 export async function compressImage(file: File): Promise<Blob> {
   if (!["image/gif", "image/png", "image/jpeg", "image/webp"].includes(file.type)) {
-    throw new CompressError("unsupported", "Unsupported format — use GIF, PNG, JPG, or WebP.");
+    throw new CompressError("unsupported", "Unsupported format â€” use GIF, PNG, JPG, or WebP.");
   }
   if (file.size > MAX_INPUT_BYTES) {
-    throw new CompressError("too-large", "File too large — please use a file under 8 MB.");
+    throw new CompressError("too-large", "File too large â€” please use a file under 8 MB.");
   }
   const canvas = await decodeToCanvas(file);
   const blob = await canvasToWebP(canvas, MAX_OUTPUT_BYTES);
@@ -1112,7 +1112,7 @@ export async function compressImage(file: File): Promise<Blob> {
 }
 ```
 
-- [ ] **Step 2: Taunt API client in `api.ts`**
+- [x] **Step 2: Taunt API client in `api.ts`**
 
 Append to `apps/web/src/lib/api.ts`:
 
@@ -1129,7 +1129,7 @@ export const api = {
     });
     if (!res.ok) {
       const body = (await res.json().catch(() => null)) as { error?: string } | null;
-      throw new Error(body?.error ?? "Upload failed — please try again.");
+      throw new Error(body?.error ?? "Upload failed â€” please try again.");
     }
     return res.json() as Promise<{ sha256: string; size: number; asset_key: string }>;
   },
@@ -1152,12 +1152,12 @@ export const api = {
 };
 ```
 
-- [ ] **Step 3: Typecheck**
+- [x] **Step 3: Typecheck**
 
 Run: `npm run typecheck --workspace=apps/web`
 Expected: PASS.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add apps/web/src/lib/compressImage.ts apps/web/src/lib/api.ts
@@ -1166,7 +1166,7 @@ git commit -m "feat: browser GIF-to-WebP compressor and taunt API client"
 
 ---
 
-### Task 10: Web — custom taunt manager UI + Firestore rules
+### Task 10: Web â€” custom taunt manager UI + Firestore rules
 
 **Files:**
 - Create: `apps/web/src/components/CustomTauntManager.tsx`
@@ -1178,7 +1178,7 @@ git commit -m "feat: browser GIF-to-WebP compressor and taunt API client"
 - Consumes: `compressImage`, `api.uploadTaunt/deleteTaunt/tauntAssetUrl`, `firestore.customTaunts`, `useAuth`.
 - Produces: reusable `CustomTauntManager` with upload / replace / delete UI; `user_custom_taunts` rules.
 
-- [ ] **Step 1: Firestore rules**
+- [x] **Step 1: Firestore rules**
 
 In `firestore.rules`, inside the `service cloud.firestore { match /databases/{database}/documents {` block, add near the `user_inventory` rule:
 
@@ -1189,7 +1189,7 @@ match /user_custom_taunts/{userId} {
 }
 ```
 
-- [ ] **Step 2: Write the manager**
+- [x] **Step 2: Write the manager**
 
 `apps/web/src/components/CustomTauntManager.tsx`:
 
@@ -1226,7 +1226,7 @@ export function CustomTauntManager({ onChanged }: { onChanged?: () => void }) {
       toast("Custom taunt uploaded.", "success");
       onChanged?.();
     } catch (e) {
-      const msg = e instanceof CompressError || e instanceof Error ? e.message : "Upload failed — please try again.";
+      const msg = e instanceof CompressError || e instanceof Error ? e.message : "Upload failed â€” please try again.";
       toast(msg, "error");
     } finally {
       setBusy(false);
@@ -1256,7 +1256,7 @@ export function CustomTauntManager({ onChanged }: { onChanged?: () => void }) {
     <Card className="space-y-3 p-4">
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm font-medium">Custom taunt</p>
-        <span className="text-[11px] text-ink-faint">GIF → WebP · 512 KB max</span>
+        <span className="text-[11px] text-ink-faint">GIF â†’ WebP Â· 512 KB max</span>
       </div>
 
       {taunt ? (
@@ -1278,7 +1278,7 @@ export function CustomTauntManager({ onChanged }: { onChanged?: () => void }) {
         </div>
       ) : (
         <Button size="sm" variant="secondary" disabled={busy} onClick={() => inputRef.current?.click()}>
-          {busy ? "Uploading…" : "Upload your own"}
+          {busy ? "Uploadingâ€¦" : "Upload your own"}
         </Button>
       )}
 
@@ -1297,9 +1297,9 @@ export function CustomTauntManager({ onChanged }: { onChanged?: () => void }) {
 }
 ```
 
-Add `Card` to the `/components/ui` import list — check the barrel exports `Card` (yes). The `UserCard` import is unused in this draft — remove it.
+Add `Card` to the `/components/ui` import list â€” check the barrel exports `Card` (yes). The `UserCard` import is unused in this draft â€” remove it.
 
-- [ ] **Step 3: Wire into Shop taunt category**
+- [x] **Step 3: Wire into Shop taunt category**
 
 In `Shop.tsx`, in the tab content render, after the item grid add (inside the same `{(activeCat) => (...)}` block, when `activeCat === "taunt"`):
 
@@ -1313,7 +1313,7 @@ In `Shop.tsx`, in the tab content render, after the item grid add (inside the sa
 
 Add `import { CustomTauntManager } from "@/components/CustomTauntManager";`.
 
-- [ ] **Step 4: Wire into Profile Equipped tab**
+- [x] **Step 4: Wire into Profile Equipped tab**
 
 In `Profile.tsx` `EquippedTab`, add a `taunt` row slot variant with the manager below the slots grid when `cat === "taunt"`:
 
@@ -1325,12 +1325,12 @@ In `Profile.tsx` `EquippedTab`, add a `taunt` row slot variant with the manager 
 
 Simplest correct version: render `<div className="space-y-2.5 animate-fade-in"><CustomTauntManager onChanged={() => loadData()} /></div>` above the slots grid in `EquippedTab`. Accept slight duplicate (custom taunt + "taunt" slot row both visible).
 
-- [ ] **Step 5: Typecheck + build**
+- [x] **Step 5: Typecheck + build**
 
 Run: `npm run typecheck --workspace=apps/web; if ($?) { npm run build --workspace=apps/web }`
 Expected: PASS.
 
-- [ ] **Step 6: Publish rules + commit**
+- [x] **Step 6: Publish rules + commit**
 
 ```bash
 npx firebase deploy --only firestore:rules --project rivalr-f5436
@@ -1340,7 +1340,7 @@ git commit -m "feat: custom taunt upload manager with rules"
 
 ---
 
-### Task 11: Web — render custom taunts in the activity feed
+### Task 11: Web â€” render custom taunts in the activity feed
 
 **Files:**
 - Modify: `apps/web/src/pages/GuildHome.tsx`
@@ -1349,7 +1349,7 @@ git commit -m "feat: custom taunt upload manager with rules"
 - Consumes: `firestore.customTaunts.get` (per member), `api.tauntAssetUrl`.
 - Produces: `<img>` under the score row when the taunting user has a custom taunt equipped.
 
-- [ ] **Step 1: Batch-load custom taunts in `loadGuild`**
+- [x] **Step 1: Batch-load custom taunts in `loadGuild`**
 
 Add state: `const [customTaunts, setCustomTaunts] = useState<Record<string, CustomTaunt>>({});`
 
@@ -1366,7 +1366,7 @@ setCustomTaunts(ctMap);
 
 Import `CustomTaunt` type and `api`.
 
-- [ ] **Step 2: Render in `ActivityTab`**
+- [x] **Step 2: Render in `ActivityTab`**
 
 Change `ActivityTab` to accept `customTaunts: Record<string, CustomTaunt>` and render after the row content (below the flex row's timestamp line, still inside the row):
 
@@ -1382,23 +1382,23 @@ Change `ActivityTab` to accept `customTaunts: Record<string, CustomTaunt>` and r
 
 Rename prop locally to `ctMap` for brevity. Pass `customTaunts={customTaunts}` from the `activity` tab render (line 226).
 
-- [ ] **Step 3: Typecheck + build**
+- [x] **Step 3: Typecheck + build**
 
 Run: `npm run typecheck --workspace=apps/web; if ($?) { npm run build --workspace=apps/web }`
 Expected: PASS.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add apps/web/src/pages/GuildHome.tsx
 git commit -m "feat: show custom taunt WebP in activity feed"
 ```
 
-**Phase B complete milestone:** live deploy worker (already deployed in Task 8) + web (same command used at Phase A milestone). Manual smoke: upload a GIF in shop taunt tab → see it in the feed.
+**Phase B complete milestone:** live deploy worker (already deployed in Task 8) + web (same command used at Phase A milestone). Manual smoke: upload a GIF in shop taunt tab â†’ see it in the feed.
 
 ---
 
-# Phase C — Quiz Accessories
+# Phase C â€” Quiz Accessories
 
 ### Task 12: Quiz screen theme vars + sound effects
 
@@ -1410,7 +1410,7 @@ git commit -m "feat: show custom taunt WebP in activity feed"
 - Consumes: `firestore.userInventory.getForUsers`, `firestore.shopItems.getAll`, `api.sfxUrl`.
 - Produces: CSS vars `--quiz-accent`, `--quiz-bg` on the quiz root; correct/wrong sfx playback from equipped `sound_effect` item.
 
-- [ ] **Step 1: Sound lib**
+- [x] **Step 1: Sound lib**
 
 `apps/web/src/lib/sound.ts`:
 
@@ -1448,7 +1448,7 @@ function getCtx(): AudioContext {
 }
 ```
 
-- [ ] **Step 2: Load equipped accessories in QuizScreen**
+- [x] **Step 2: Load equipped accessories in QuizScreen**
 
 ```tsx
 import { playSfx } from "@/lib/sound";
@@ -1476,7 +1476,7 @@ useEffect(() => {
 }, [user]);
 ```
 
-- [ ] **Step 3: Apply theme + play sounds**
+- [x] **Step 3: Apply theme + play sounds**
 
 Apply to the root div (line 135): add
 
@@ -1501,14 +1501,14 @@ if (isCorrect) {
 }
 ```
 
-(In the current code `setStreak((s) => s + 1)` sits on line 73 — replace the existing branches with the above, preserving logic.)
+(In the current code `setStreak((s) => s + 1)` sits on line 73 â€” replace the existing branches with the above, preserving logic.)
 
-- [ ] **Step 4: Typecheck + build**
+- [x] **Step 4: Typecheck + build**
 
 Run: `npm run typecheck --workspace=apps/web; if ($?) { npm run build --workspace=apps/web }`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/web/src/pages/QuizScreen.tsx apps/web/src/lib/sound.ts
@@ -1547,10 +1547,10 @@ Expected: all three deploy cleanly.
 1. Shop shows 6 category tabs; `title` and `name_glow` items preview correctly.
 2. Buy + equip items in every category; profile shows all 6 slots filled.
 3. Public profile `/profile/:userId` from a guild member name link renders; email never visible in network tab.
-4. Upload a GIF in Shop → taunt tab; feed shows the WebP under your score rows.
+4. Upload a GIF in Shop â†’ taunt tab; feed shows the WebP under your score rows.
 5. `DELETE` via manager removes the object; slot falls back to store taunt / none.
-6. Equip a quiz theme + sound effect; start a quiz — accent color applies before render, correct answers play audio.
-7. Upload >8 MB or an `.exe` — friendly toast, no upload.
+6. Equip a quiz theme + sound effect; start a quiz â€” accent color applies before render, correct answers play audio.
+7. Upload >8 MB or an `.exe` â€” friendly toast, no upload.
 
 - [ ] **Step 5: Commit any smoke-test fixes**
 
@@ -1560,6 +1560,6 @@ If smoke tests surfaced issues, fix + commit with a `fix:` message. Otherwise no
 
 ## Self-Review Notes
 
-- **Spec coverage:** §2 R2/KV split → Tasks 7–8; §3 public profiles → Tasks 2, 4, 5; §4 six-category shop + pricing (pricing is data, entered in Firebase Console — no code task; equip mechanism unchanged) → Tasks 1, 6, 10; §5 upload pipeline → Tasks 7, 8, 9, 10; §6 global compression → Task 9 (`compressImage`); §7 rendering table → Tasks 3, 5, 11, 12; §8 errors → Task 9 (`CompressError`), Task 10 toasts, `ProfilePublic` not-found; §9 testing → Task 13 smoke checklist.
+- **Spec coverage:** Â§2 R2/KV split â†’ Tasks 7â€“8; Â§3 public profiles â†’ Tasks 2, 4, 5; Â§4 six-category shop + pricing (pricing is data, entered in Firebase Console â€” no code task; equip mechanism unchanged) â†’ Tasks 1, 6, 10; Â§5 upload pipeline â†’ Tasks 7, 8, 9, 10; Â§6 global compression â†’ Task 9 (`compressImage`); Â§7 rendering table â†’ Tasks 3, 5, 11, 12; Â§8 errors â†’ Task 9 (`CompressError`), Task 10 toasts, `ProfilePublic` not-found; Â§9 testing â†’ Task 13 smoke checklist.
 - **No placeholders:** every code-bearing step carries real code; only the web deploy command is delegated to repo convention (no such script exists in `package.json`).
 - **Type consistency:** `EquippedSlots`/`resolveEquipped` defined in Task 3 and reused in 4, 5, 10, 11; `CustomTaunt.sha256` used to build URLs in both manager (Task 10) and feed (Task 11); `asset_key` produced by Task 8 matches `customTaunts.set` input in Task 10; `FIREBASE_PROJECT_ID` var set in wrangler.toml Task 7 and consumed Task 8.
