@@ -4,11 +4,11 @@
 
 @layer base {
   html {
-    color-scheme: light;
+    color-scheme: dark;
   }
 
   body {
-    @apply bg-paper text-ink antialiased;
+    @apply bg-field text-ink antialiased;
   }
 
   * {
@@ -16,11 +16,11 @@
   }
 
   ::selection {
-    @apply bg-accent/20 text-ink;
+    @apply bg-volt text-field;
   }
 
   :focus-visible {
-    outline: 2px solid theme("colors.accent.DEFAULT");
+    outline: 2px solid theme("colors.volt.DEFAULT");
     outline-offset: 2px;
   }
 
@@ -38,10 +38,14 @@
 
 @layer components {
   .skeleton {
-    @apply animate-pulse rounded-2xl bg-line;
+    @apply animate-pulse rounded-lg bg-overpanel;
   }
 
   .surface-card {
-    @apply rounded-2xl border border-line bg-surface shadow-card;
+    @apply rounded-lg border border-line bg-panel shadow-card;
+  }
+
+  .eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.14em];
   }
 }
