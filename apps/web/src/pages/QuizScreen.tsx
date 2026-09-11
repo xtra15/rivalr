@@ -151,6 +151,24 @@ export default function QuizScreen() {
     await firestore.users.updateXP(user.id, Math.round(baseXP));
     await firestore.users.updateCoins(user.id, coins);
 
+    await Promise.all([
+      firestore.userChapterStats.upsert(
+        user.id,
+        user.google_id,
+        attempt.subject,
+        attempt.chapter_number,
+        attempt.chapter_name,
+        attempt.difficulty,
+        { correct, total: attempt.total_questions, time: timeElapsed, xp: Math.round(baseXP) },
+      ),
+      firestore.userSubjectStats.upsert(user.id, user.google_id, attempt.subject, {
+        correct,
+        total: attempt.total_questions,
+        streak,
+        xp: Math.round(baseXP),
+      }),
+    ]);
+
     navigate(`/guild/${guildId}/quiz/${attempt.id}/results`);
   }
 
