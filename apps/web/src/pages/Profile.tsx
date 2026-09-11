@@ -16,6 +16,7 @@ import {
 } from "@/components/ui";
 import { getLevel, formatAccuracy, formatCoins } from "@/utils/format";
 import { CustomTauntManager } from "@/components/CustomTauntManager";
+import { AvatarUploadManager } from "@/components/AvatarUploadManager";
 import type { UserSubjectStats, UserAchievement, ShopItem } from "@rivalr/shared";
 
 interface EnrichedAchievement {
@@ -111,6 +112,7 @@ export default function Profile() {
       <div className="grid gap-8 lg:grid-cols-3">
         <div className="lg:border-r lg:border-line lg:pr-8">
           <Avatar src={user.avatar_url} name={user.name} size="lg" />
+          <AvatarUploadManager />
           <h1 className="mt-4 font-display text-2xl uppercase tracking-wide">{user.name}</h1>
           <p className="mt-1 text-sm text-ink-muted">{user.email}</p>
 

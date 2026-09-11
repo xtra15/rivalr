@@ -1,6 +1,6 @@
 import { auth } from "./firebase";
 
-const API_BASE = import.meta.env.VITE_API_URL as string;
+export const API_BASE = import.meta.env.VITE_API_URL as string;
 
 export async function fetchQuestions(params: {
   form: number;
@@ -52,8 +52,35 @@ export const api = {
     if (!res.ok) throw new Error("Could not delete taunt.");
   },
 
+  async uploadAvatar(blob: Blob) {
+    const token = await auth.currentUser?.getIdToken();
+    const res = await fetch(`${API_BASE}/api/avatar`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: blob,
+    });
+    if (!res.ok) {
+      const body = (await res.json().catch(() => null)) as { error?: string } | null;
+      throw new Error(body?.error ?? "Avatar upload failed — please try again.");
+    }
+    return res.json() as Promise<{ sha256: string; size: number; asset_key: string }>;
+  },
+
+  async deleteAvatar() {
+    const token = await auth.currentUser?.getIdToken();
+    const res = await fetch(`${API_BASE}/api/avatar`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error("Could not delete avatar.");
+  },
+
   tauntAssetUrl(uid: string, file: string) {
     return `${API_BASE}/api/taunts/${encodeURIComponent(uid)}/${encodeURIComponent(file)}`;
+  },
+
+  avatarAssetUrl(uid: string, file: string) {
+    return `${API_BASE}/api/avatar/${encodeURIComponent(uid)}/${encodeURIComponent(file)}`;
   },
 
   sfxUrl(key: string) {

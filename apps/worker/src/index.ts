@@ -2,6 +2,7 @@ import { handleQuestions } from "./routes/questions";
 import { handleHealth } from "./routes/health";
 import { handleTaunts } from "./routes/taunts";
 import { handleSfx } from "./routes/sfx";
+import { handleAvatars } from "./routes/avatars";
 import type { Env } from "./types";
 
 export default {
@@ -28,6 +29,8 @@ export default {
         response = handleHealth();
       } else if (path.startsWith("/api/taunts")) {
         response = await handleTaunts(request, env, path);
+      } else if (path.startsWith("/api/avatar")) {
+        response = await handleAvatars(request, env, path);
       } else if (path.startsWith("/api/sfx")) {
         response = await handleSfx(request, env, path);
       } else {

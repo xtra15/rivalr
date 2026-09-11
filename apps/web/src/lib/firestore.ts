@@ -79,6 +79,10 @@ export const firestore = {
       const ref = doc(db, "users", userId);
       await updateDoc(ref, { status });
     },
+    async updateAvatar(userId: string, avatarUrl: string | null) {
+      const ref = doc(db, "users", userId);
+      await updateDoc(ref, { avatar_url: avatarUrl });
+    },
   },
 
   guilds: {
