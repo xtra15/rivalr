@@ -5,6 +5,7 @@ import {
   getDocs,
   setDoc,
   updateDoc,
+  deleteDoc,
   query,
   where,
   increment,
@@ -54,6 +55,10 @@ export const firestore = {
       const ref = doc(db, "users", userId);
       await updateDoc(ref, { coins: increment(amount) });
     },
+    async updateStatus(userId: string, status: string) {
+      const ref = doc(db, "users", userId);
+      await updateDoc(ref, { status });
+    },
   },
 
   guilds: {
@@ -70,6 +75,14 @@ export const firestore = {
       const ref = doc(collection(db, "guilds"));
       await setDoc(ref, { ...data, created_at: new Date().toISOString() });
       return { id: ref.id, ...data };
+    },
+    async update(guildId: string, data: FsWriteData) {
+      const ref = doc(db, "guilds", guildId);
+      await updateDoc(ref, data);
+    },
+    async delete(guildId: string) {
+      const ref = doc(db, "guilds", guildId);
+      await deleteDoc(ref);
     },
     async getByIds(ids: string[]) {
       const results: (Record<string, unknown> & { id: string })[] = [];
@@ -95,6 +108,10 @@ export const firestore = {
       const q = query(collection(db, "guild_members"), where("user_id", "==", userId));
       const snap = await getDocs(q);
       return snap.docs.map((d) => toPlain(d.data() as Record<string, unknown>));
+    },
+    async remove(guildId: string, userId: string) {
+      const ref = doc(db, "guild_members", `${guildId}_${userId}`);
+      await deleteDoc(ref);
     },
   },
 
@@ -134,6 +151,10 @@ export const firestore = {
           const bt = String((b as { completed_at?: string }).completed_at ?? "");
           return at < bt ? 1 : at > bt ? -1 : 0;
         });
+    },
+    async getAll() {
+      const snap = await getDocs(collection(db, "quiz_attempts"));
+      return snap.docs.map((d) => ({ id: d.id, ...toPlain(d.data()) }));
     },
   },
 
