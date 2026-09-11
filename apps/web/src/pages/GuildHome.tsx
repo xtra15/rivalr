@@ -30,6 +30,7 @@ export default function GuildHome() {
   const [attempts, setAttempts] = useState<QuizAttempt[]>([]);
   const [chapterStats, setChapterStats] = useState<UserChapterStats[]>([]);
   const [inviteCopied, setInviteCopied] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -154,6 +155,19 @@ export default function GuildHome() {
         </div>
         <div className="flex items-center gap-3">
           <LiveBadge />
+          {user?.id === guild.created_by ? (
+            <button
+              onClick={() => setShowSettings((s) => !s)}
+              aria-label="Guild settings"
+              className={`inline-flex h-10 w-10 items-center justify-center rounded-md border transition-colors ${
+                showSettings
+                  ? "border-volt bg-volt/10 text-volt"
+                  : "border-line bg-panel text-ink-muted hover:border-line-strong hover:text-ink"
+              }`}
+            >
+              <Icon name="settings" size={18} />
+            </button>
+          ) : null}
           <Link to={`/guild/${guildId}/quiz`}>
             <Button size="lg" className="w-full sm:w-auto">
               <Icon name="play" size={17} fill />
@@ -163,13 +177,17 @@ export default function GuildHome() {
         </div>
       </div>
 
-      <GuildSettings
-        guildId={guildId!}
-        guildName={guild.name}
-        guildDescription={guild.description}
-        guildIcon={guild.icon}
-        createdBy={guild.created_by}
-      />
+      {showSettings ? (
+        <div className="animate-slide-down">
+          <GuildSettings
+            guildId={guildId!}
+            guildName={guild.name}
+            guildDescription={guild.description}
+            guildIcon={guild.icon}
+            createdBy={guild.created_by}
+          />
+        </div>
+      ) : null}
 
       <div className="mb-6 flex flex-wrap gap-2">
         <StatPill value={String(members.length)} label={members.length === 1 ? "member" : "members"} />
