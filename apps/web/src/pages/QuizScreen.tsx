@@ -2,9 +2,11 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { firestore } from "@/lib/firestore";
+import { hexToProgressClass, playCorrectSfx } from "@/lib/theme";
+import { api } from "@/lib/api";
 import { ProgressBar, Icon, LoadingScreen, FormulaText } from "@/components/ui";
 import { formatTime } from "@/utils/format";
-import type { QuizAttempt } from "@rivalr/shared";
+import type { QuizAttempt, ShopItem } from "@rivalr/shared";
 
 export default function QuizScreen() {
   const { guildId, quizId } = useParams<{ guildId: string; quizId: string }>();
@@ -19,6 +21,9 @@ export default function QuizScreen() {
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [remaining, setRemaining] = useState(60);
   const [loading, setLoading] = useState(true);
+  const [themeHex, setThemeHex] = useState<string | null>(null);
+  const [sfxUrl, setSfxUrl] = useState<string | null>(null);
+  const sfxAudio = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   const finishedRef = useRef(false);
 
@@ -26,6 +31,24 @@ export default function QuizScreen() {
     loadAttempt();
     return () => clearInterval(timerRef.current);
   }, [quizId]);
+
+  useEffect(() => {
+    if (!user) return;
+    Promise.all([firestore.shopItems.getAll() as Promise<ShopItem[]>, firestore.userInventory.get(user.id)]).then(
+      ([items, inv]) => {
+        const equipped = new Set(
+          (inv as unknown as { item_id: string; is_equipped: boolean }[])
+            .filter((i) => i.is_equipped)
+            .map((i) => i.item_id),
+        );
+        for (const item of items) {
+          if (!equipped.has(item.id)) continue;
+          if (item.category === "quiz_theme" && item.preview_data?.startsWith("#")) setThemeHex(item.preview_data);
+          if (item.category === "sound_effect" && item.preview_data) setSfxUrl(api.sfxUrl(item.preview_data));
+        }
+      },
+    );
+  }, [user?.id]);
 
   useEffect(() => {
     if (!attempt || showResult) return;
@@ -70,8 +93,15 @@ export default function QuizScreen() {
       setShowResult(true);
 
       const isCorrect = answerIndex === currentQuestion.correct;
-      if (isCorrect) setStreak((s) => s + 1);
-      else setStreak(0);
+      if (isCorrect) {
+        setStreak((s) => s + 1);
+        if (sfxUrl) {
+          if (!sfxAudio.current) sfxAudio.current = new Audio();
+          playCorrectSfx(sfxAudio.current, sfxUrl);
+        }
+      } else {
+        setStreak(0);
+      }
 
       const updated = [...attempt.questions_data];
       updated[currentIndex] = { ...updated[currentIndex]!, user_answer: answerIndex };
@@ -132,7 +162,10 @@ export default function QuizScreen() {
   const isLast = currentIndex >= attempt.total_questions - 1;
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-2xl flex-col px-4 py-6 sm:px-6 animate-fade-in">
+    <div
+      className="mx-auto flex min-h-screen w-full max-w-2xl flex-col px-4 py-6 sm:px-6 animate-fade-in"
+      style={themeHex ? { ["--quiz-accent" as string]: themeHex } : undefined}
+    >
       <div className="flex items-center justify-between text-sm">
         <p className="text-[13px] text-ink-muted">
           Question {currentIndex + 1} of {attempt.total_questions}
@@ -162,7 +195,7 @@ export default function QuizScreen() {
       </div>
 
       <div className="mt-4">
-        <ProgressBar value={currentIndex + 1} max={attempt.total_questions} />
+        <ProgressBar value={currentIndex + 1} max={attempt.total_questions} color={hexToProgressClass(themeHex)} />
       </div>
 
       <div className="flex flex-1 flex-col items-center justify-center py-10 text-center">
@@ -195,9 +228,14 @@ export default function QuizScreen() {
                     : showResult
                       ? "border-line bg-overpanel opacity-50"
                       : isSelected
-                        ? "border-volt bg-panel-2"
+                        ? "bg-panel-2"
                         : "border-line bg-panel hover:border-line-strong hover:bg-panel-2 active:scale-[0.99]"
               }`}
+              style={
+                isSelected && !showResult
+                  ? { borderColor: themeHex ?? "#C9F73A" }
+                  : undefined
+              }
             >
               <span
                 className={`mt-3 flex h-7 w-8 shrink-0 items-center justify-center rounded-md text-[13px] font-semibold sm:mt-4 ${
