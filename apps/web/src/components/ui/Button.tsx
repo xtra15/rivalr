@@ -6,9 +6,9 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variants = {
-  primary: "bg-accent text-white hover:bg-accent-hover shadow-card",
-  secondary: "bg-surface text-ink hover:bg-wash border border-line-strong",
-  ghost: "bg-transparent text-ink-muted hover:text-ink hover:bg-wash",
+  primary: "bg-accent text-field hover:bg-accent-hover shadow-card",
+  secondary: "bg-panel text-ink hover:bg-overpanel border border-line-strong",
+  ghost: "bg-transparent text-ink-muted hover:text-ink hover:bg-overpanel",
   danger: "bg-danger/10 text-danger hover:bg-danger/15 border border-danger/25",
 };
 
@@ -23,7 +23,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     <button
       ref={ref}
       disabled={disabled}
-      className={`inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-150
+      className={`inline-flex items-center justify-center gap-2 rounded-md font-medium transition-all duration-150
         active:scale-[0.98] select-none
         focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2
         disabled:opacity-40 disabled:pointer-events-none

@@ -220,8 +220,8 @@ export function LogoMark({ size = 32, className = "" }: { size?: number; classNa
       aria-hidden="true"
       focusable="false"
     >
-      <rect width="512" height="512" rx="128" fill="#1d4ed8" />
-      <path d="M284 96 L176 288 h72 l-20 128 l112 -200 h-72 z" fill="#ffffff" />
+      <rect width="512" height="512" rx="112" fill="#C9F73A" />
+      <path d="M284 96 L176 288 h72 l-20 128 l112 -200 h-72 z" fill="#0B0D0C" />
     </svg>
   );
 }
