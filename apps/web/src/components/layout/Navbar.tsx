@@ -8,6 +8,11 @@ const navItems: { to: string; label: string; icon: IconName }[] = [
   { to: "/profile", label: "Profile", icon: "user" },
 ];
 
+const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS ?? "")
+  .split(",")
+  .map((email: string) => email.trim().toLowerCase())
+  .filter(Boolean);
+
 const TAB_ROUTES = new Set(["/dashboard", "/shop", "/profile"]);
 
 function isActivePath(locationPathname: string, to: string) {
@@ -20,6 +25,11 @@ export function Sidebar() {
 
   if (!user) return null;
 
+  const items = [...navItems];
+  if (ADMIN_EMAILS.length === 0 || ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+    items.push({ to: "/admin", label: "Admin", icon: "shield" });
+  }
+
   return (
     <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-line bg-field md:flex">
       <div className="flex h-14 items-center gap-2.5 px-5">
@@ -28,7 +38,7 @@ export function Sidebar() {
       </div>
 
       <nav className="mt-2 flex flex-col gap-0.5 px-3">
-        {navItems.map((item) => {
+        {items.map((item) => {
           const isActive = isActivePath(location.pathname, item.to);
           return (
             <NavLink
@@ -74,15 +84,23 @@ export function MobileTabBar() {
   const location = useLocation();
 
   if (!user) return null;
-  if (!TAB_ROUTES.has(location.pathname)) return null;
+  if (!TAB_ROUTES.has(location.pathname) && location.pathname !== "/admin") return null;
+
+  const items = [...navItems];
+  if (ADMIN_EMAILS.length === 0 || ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+    items.push({ to: "/admin", label: "Admin", icon: "shield" });
+  }
 
   return (
     <nav
       aria-label="Primary"
       className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-field/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"
     >
-      <div className="mx-auto grid max-w-md grid-cols-3">
-        {navItems.map((item) => {
+      <div
+        className="mx-auto grid max-w-md"
+        style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}
+      >
+        {items.map((item) => {
           const isActive = isActivePath(location.pathname, item.to);
           return (
             <NavLink

@@ -84,13 +84,17 @@ export const firestore = {
       const ref = doc(db, "guilds", guildId);
       await deleteDoc(ref);
     },
-    async getByIds(ids: string[]) {
+async getByIds(ids: string[]) {
       const results: (Record<string, unknown> & { id: string })[] = [];
       for (const id of ids) {
         const snap = await getDoc(doc(db, "guilds", id));
         if (snap.exists()) results.push({ id: snap.id, ...toPlain(snap.data()) });
       }
       return results;
+    },
+    async getAll() {
+      const snap = await getDocs(collection(db, "guilds"));
+      return snap.docs.map((d) => ({ id: d.id, ...toPlain(d.data()) }));
     },
   },
 
@@ -124,6 +128,10 @@ export const firestore = {
         if (snap.exists()) results.push({ id: snap.id, ...toPlain(snap.data()) });
       }
       return results;
+    },
+    async getAll() {
+      const snap = await getDocs(collection(db, "users"));
+      return snap.docs.map((d) => ({ id: d.id, ...toPlain(d.data()) }));
     },
   },
 

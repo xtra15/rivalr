@@ -10,6 +10,7 @@ import QuizScreen from "@/pages/QuizScreen";
 import Results from "@/pages/Results";
 import Profile from "@/pages/Profile";
 import Shop from "@/pages/Shop";
+import Admin from "@/pages/Admin";
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
             <Route path="/guild/:guildId/quiz/:quizId/results" element={<Results />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/shop" element={<Shop />} />
+            <Route path="/admin" element={<Admin />} />
           </Route>
           <Route element={<BareLayout />}>
             <Route path="/guild/:guildId/quiz/:quizId" element={<QuizScreen />} />
