@@ -74,6 +74,7 @@ export default function QuizLobby() {
           correct: q.correct,
           explanation: q.explanation ?? "",
           user_answer: null,
+          table: q.table,
         })),
       });
 

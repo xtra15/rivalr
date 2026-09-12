@@ -3,6 +3,7 @@ export interface Question {
   options: string[];
   correct: number;
   explanation: string;
+  table?: { columns: string[]; rows: string[][] };
 }
 
 export function buildPrompt(params: {

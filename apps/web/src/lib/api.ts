@@ -23,6 +23,7 @@ export async function fetchQuestions(params: {
       options: string[];
       correct: number;
       explanation: string;
+      table?: { columns: string[]; rows: string[][] };
     }[];
     cached: boolean;
   }>;

@@ -52,6 +52,7 @@ export interface QuestionData {
   correct: number;
   explanation: string;
   user_answer?: number;
+  table?: { columns: string[]; rows: string[][] };
 }
 
 export interface Achievement {
