@@ -52,7 +52,7 @@ export async function handleQuestions(request: Request, env: Env): Promise<Respo
     return new Response("Missing required fields", { status: 400 });
   }
 
-  const key = `q2:${form}:${subject.toLowerCase()}:${chapter_number}:${difficulty.toLowerCase()}:${count}`;
+  const key = `q3:${form}:${subject.toLowerCase()}:${chapter_number}:${difficulty.toLowerCase()}:${count}`;
 
   const cached = await env.QUESTIONS_KV.get(key);
   if (cached) {
