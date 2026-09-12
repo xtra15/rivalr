@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { firestore } from "@/lib/firestore";
-import { Card, Button, Icon, StatPill, LoadingScreen, FormulaText, type IconName } from "@/components/ui";
+import { Card, Button, Icon, StatPill, LoadingScreen, FormulaText, QuestionTable, type IconName } from "@/components/ui";
 import { UserCard, resolveEquipped, type EquippedSlots } from "@/components/UserCard";
 import { formatTime, formatCoins, formatAccuracy } from "@/utils/format";
 import type { QuizAttempt, ShopItem } from "@rivalr/shared";
@@ -101,6 +101,7 @@ export default function Results() {
                       <span className="mr-1.5 text-ink-muted">Q{i + 1}.</span>
                       <FormulaText text={q.question} />
                     </p>
+                    <QuestionTable table={q.table} className="mt-2" />
                     <span
                       className={`mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
                         isRight ? "bg-success/15 text-success" : "bg-danger/15 text-danger"
