@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { firestore } from "@/lib/firestore";
 import { hexToProgressClass, playCorrectSfx } from "@/lib/theme";
 import { api } from "@/lib/api";
-import { ProgressBar, Icon, LoadingScreen, FormulaText } from "@/components/ui";
+import { ProgressBar, Icon, LoadingScreen, FormulaText, QuestionTable } from "@/components/ui";
 import { formatTime } from "@/utils/format";
 import type { QuizAttempt, ShopItem } from "@rivalr/shared";
 
@@ -225,9 +225,10 @@ export default function QuizScreen() {
           className="max-w-xl text-lg font-medium leading-relaxed text-ink sm:text-xl"
           display
         />
+        <QuestionTable table={currentQuestion.table} className="mt-4 mx-auto max-w-xl" />
       </div>
 
-      <div className="flex flex-col gap-2.5">
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
         {currentQuestion.options.map((opt, i) => {
           const isSelected = selected === i;
           const isRight = showResult && i === currentQuestion.correct;
