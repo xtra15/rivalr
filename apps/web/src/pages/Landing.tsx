@@ -12,7 +12,7 @@ const DEMO = [
 ];
 
 const FEATURES: { stat: string; title: string; body: string; icon: IconName }[] = [
-  { stat: "47", title: "chapters covered", body: "Every Form 4 and Form 5 chapter across the science stream.", icon: "book" },
+  { stat: "72", title: "chapters covered", body: "Every Form 4 and Form 5 chapter across the science stream.", icon: "book" },
   { stat: "4", title: "subjects", body: "Biology, Chemistry, Physics and Additional Mathematics.", icon: "target" },
   { stat: "1", title: "private guild", body: "Invite-only groups. Just you and your friends.", icon: "users" },
 ];
