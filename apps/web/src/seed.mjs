@@ -42,7 +42,7 @@ const achievements = [
   { name: "Sharpshooter", description: "Maintain 90%+ accuracy over 20 quizzes", icon: "🎯", xp_reward: 400 },
 ];
 
-const achievementsById: Record<string, string> = {
+const achievementsById = {
   first_blood: "First Blood",
   on_fire: "On Fire",
   perfect_score: "Perfect",
@@ -67,6 +67,7 @@ const shopItems = [
   { id: "frame_fire_ring", name: "Fire Ring", description: "For those on a hot streak", category: "avatar_frame", coin_cost: 150, preview_data: "🔥" },
   { id: "frame_galaxy", name: "Galaxy", description: "Out of this world", category: "avatar_frame", coin_cost: 300, preview_data: "🌌" },
   { id: "frame_spm_champion", name: "SPM Champion", description: "You made it", category: "avatar_frame", coin_cost: 1500, preview_data: "🏆" },
+  { id: "frame_cherry", name: "Cherry", description: "Small and sweet", category: "avatar_frame", coin_cost: 250, preview_data: "🍒" },
   // Sound effects
   { id: "sfx_whoosh", name: "Whoosh", description: "A satisfying whoosh on correct answers", category: "sound_effect", coin_cost: 300, preview_data: "whoosh.mp3" },
   { id: "sfx_ding", name: "Ding", description: "A clean ding when you nail it", category: "sound_effect", coin_cost: 300, preview_data: "ding.mp3" },
@@ -79,6 +80,7 @@ const shopItems = [
   { id: "theme_ice", name: "Ice Blue", description: "Cool ice-blue accents", category: "quiz_theme", coin_cost: 400, preview_data: "#3ABEF9" },
   { id: "theme_ember", name: "Ember", description: "Deep ember red accents", category: "quiz_theme", coin_cost: 600, preview_data: "#FF5733" },
   { id: "theme_forest", name: "Forest Green", description: "Stay sharp in the woods", category: "quiz_theme", coin_cost: 600, preview_data: "#3DD68C" },
+  { id: "theme_purple", name: "Purple", description: "Deep violet accents", category: "quiz_theme", coin_cost: 500, preview_data: "#9B5CF6" },
   // Taunt stickers
   { id: "taunt_devil", name: "Mischief", description: "Post in the activity feed", category: "taunt", coin_cost: 30, preview_data: "😈" },
   { id: "taunt_skull", name: "Destroyed", description: "When someone fails the quiz", category: "taunt", coin_cost: 30, preview_data: "💀" },
@@ -92,12 +94,14 @@ const shopItems = [
   { id: "title_bio_king", name: "Bio King", description: "Dominates Biology", category: "title", coin_cost: 300, preview_data: "Bio King" },
   { id: "title_legend", name: "Legend", description: "A formidable reputation", category: "title", coin_cost: 600, preview_data: "Legend" },
   { id: "title_spm_legend", name: "SPM LEGEND", description: "The ultimate title for the truly fearsome", category: "title", coin_cost: 1500, preview_data: "SPM LEGEND" },
+  { id: "title_certified", name: "Certified", description: "You know your stuff", category: "title", coin_cost: 350, preview_data: "Certified" },
   // Name glows
   { id: "glow_none", name: "None", description: "No glow", category: "name_glow", coin_cost: 0, preview_data: null },
   { id: "glow_silver", name: "Silver Glow", description: "Subtle and sleek", category: "name_glow", coin_cost: 120, preview_data: "#C0C0C0" },
   { id: "glow_lime", name: "Lime Glow", description: "Electric lime signature", category: "name_glow", coin_cost: 300, preview_data: "#C9F73A" },
   { id: "glow_pink", name: "Pink Glow", description: "Bold hot pink shine", category: "name_glow", coin_cost: 300, preview_data: "#FF3CAC" },
   { id: "glow_gold", name: "Gold Glow", description: "Regal and expensive", category: "name_glow", coin_cost: 800, preview_data: "#FFD700" },
+  { id: "glow_orange", name: "Orange Glow", description: "Warm and loud", category: "name_glow", coin_cost: 300, preview_data: "#FF8C00" },
 ];
 
 async function seed() {
