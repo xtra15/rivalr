@@ -18,7 +18,7 @@ import {
 } from "@/components/ui";
 import { formatAccuracy, formatTime, getLevel } from "@/utils/format";
 import { GuildSettings } from "@/components/GuildSettings";
-import { UserCard, resolveEquipped, type EquippedSlots } from "@/components/UserCard";
+import { UserCard, resolveEquipped, type EquippedSlots, type ItemWithCustomColor } from "@/components/UserCard";
 import { api } from "@/lib/api";
 import type { Guild, User, QuizAttempt, UserChapterStats } from "@rivalr/shared";
 import type { ShopItem, CustomTaunt } from "@rivalr/shared";
@@ -64,7 +64,7 @@ export default function GuildHome() {
         const slots: Record<string, EquippedSlots> = {};
         for (const id of userIds) {
           slots[id] = resolveEquipped(
-            inv.filter((i) => i.user_id === id) as unknown as { item_id: string; is_equipped: boolean }[],
+            inv.filter((i) => i.user_id === id) as unknown as ItemWithCustomColor[],
             items,
           );
         }

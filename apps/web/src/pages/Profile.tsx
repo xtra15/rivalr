@@ -95,7 +95,11 @@ export default function Profile() {
     setInventoryIds(inv.map((i) => i.item_id));
     setShopItems(shopItems);
     setRawInventory(
-      inv.map((i) => ({ item_id: i.item_id as string, is_equipped: Boolean(i.is_equipped) })),
+      inv.map((i) => ({
+        item_id: i.item_id as string,
+        is_equipped: Boolean(i.is_equipped),
+        custom_color: (i as { custom_color?: string | null }).custom_color ?? null,
+      })),
     );
   }
 

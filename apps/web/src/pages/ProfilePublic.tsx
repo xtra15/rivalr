@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { firestore } from "@/lib/firestore";
 import { Card, StatPill, EmptyState, LoadingScreen } from "@/components/ui";
-import { UserCard, resolveEquipped, type EquippedSlots } from "@/components/UserCard";
+import { UserCard, resolveEquipped, type EquippedSlots, type ItemWithCustomColor } from "@/components/UserCard";
 import { getLevel, formatAccuracy } from "@/utils/format";
 import type { PublicUser, ShopItem, UserSubjectStats } from "@rivalr/shared";
 
@@ -28,7 +28,7 @@ export default function ProfilePublic() {
         firestore.userInventory.getForUsers([userId]),
         firestore.shopItems.getAll() as Promise<ShopItem[]>,
       ]);
-      setSlots(resolveEquipped(inv as unknown as { item_id: string; is_equipped: boolean }[], items));
+      setSlots(resolveEquipped(inv as unknown as ItemWithCustomColor[], items));
       const s = (await firestore.userSubjectStats.get(userId)) as unknown as UserSubjectStats[];
       setStats(s);
       setLoading(false);

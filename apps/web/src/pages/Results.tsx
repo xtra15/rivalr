@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { firestore } from "@/lib/firestore";
 import { Card, Button, Icon, StatPill, LoadingScreen, FormulaText, QuestionTable, type IconName } from "@/components/ui";
-import { UserCard, resolveEquipped, type EquippedSlots } from "@/components/UserCard";
+import { UserCard, resolveEquipped, type EquippedSlots, type ItemWithCustomColor } from "@/components/UserCard";
 import { formatTime, formatCoins, formatAccuracy } from "@/utils/format";
 import type { QuizAttempt, ShopItem } from "@rivalr/shared";
 
@@ -31,7 +31,7 @@ export default function Results() {
         firestore.shopItems.getAll() as Promise<ShopItem[]>,
       ]);
       setFlexSlots(
-        resolveEquipped(inv as unknown as { item_id: string; is_equipped: boolean }[], items),
+        resolveEquipped(inv as unknown as ItemWithCustomColor[], items),
       );
     })();
   }, [user]);

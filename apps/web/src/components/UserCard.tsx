@@ -10,23 +10,40 @@ export interface EquippedSlots {
   tauntPreview?: string | null;
 }
 
+export interface ItemWithCustomColor {
+  item_id: string;
+  is_equipped: boolean;
+  custom_color?: string | null;
+}
+
 export function resolveEquipped(
-  inventory: { item_id: string; is_equipped: boolean }[],
+  inventory: ItemWithCustomColor[],
   items: ShopItem[],
 ): EquippedSlots {
   const slots: EquippedSlots = {};
+  let presetFrame: string | undefined;
+  let customFrame: string | undefined;
   for (const inv of inventory) {
     if (!inv.is_equipped) continue;
     const item = items.find((s) => s.id === inv.item_id);
     if (!item) continue;
-    if (item.category === "avatar_frame" || item.category === "name_glow") {
-      const color = item.preview_data?.startsWith("#") ? item.preview_data : undefined;
-      if (item.category === "avatar_frame") slots.frameColor = color;
-      if (item.category === "name_glow") slots.glowColor = color;
+    if (item.category === "avatar_frame") {
+      presetFrame = item.preview_data?.startsWith("#") ? item.preview_data : undefined;
+    }
+    if (item.category === "name_glow") {
+      slots.glowColor = item.preview_data?.startsWith("#") ? item.preview_data : undefined;
+    }
+    if (item.category === "custom_frame_color") {
+      customFrame = inv.custom_color?.startsWith("#")
+        ? inv.custom_color
+        : item.preview_data?.startsWith("#")
+          ? item.preview_data
+          : undefined;
     }
     if (item.category === "title") slots.title = item.preview_data ?? undefined;
     if (item.category === "taunt") slots.tauntPreview = item.preview_data;
   }
+  slots.frameColor = customFrame ?? presetFrame;
   return slots;
 }
 
@@ -53,7 +70,7 @@ function useSlots(userId: string | undefined, slots?: EquippedSlots) {
           firestore.userInventory.getForUsers([userId]),
           firestore.shopItems.getAll() as Promise<ShopItem[]>,
         ]);
-        if (alive) setLoaded(resolveEquipped(inv as unknown as { item_id: string; is_equipped: boolean }[], items));
+        if (alive) setLoaded(resolveEquipped(inv as unknown as ItemWithCustomColor[], items));
       } catch {
         if (alive) setLoaded({});
       }
