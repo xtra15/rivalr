@@ -1,8 +1,11 @@
+import type { CSSProperties } from "react";
+
 interface AvatarProps {
   src: string | null;
   name: string;
   size?: "sm" | "md" | "lg" | "xl";
   className?: string;
+  frameColor?: string;
 }
 
 const sizes = {
@@ -18,7 +21,7 @@ const hueFor = (name: string) => {
   return h;
 };
 
-export function Avatar({ src, name, size = "md", className = "" }: AvatarProps) {
+export function Avatar({ src, name, size = "md", className = "", frameColor }: AvatarProps) {
   const initials = name
     .split(" ")
     .map((n) => n[0])
@@ -26,26 +29,32 @@ export function Avatar({ src, name, size = "md", className = "" }: AvatarProps) 
     .slice(0, 2)
     .toUpperCase();
 
-  if (src) {
-    return (
-      <img
-        src={src}
-        alt={name}
-        className={`rounded-full object-cover ring-1 ring-line ${sizes[size]} ${className}`}
-      />
-    );
-  }
-
-  const hue = hueFor(name || "?");
-  return (
+  const body = src ? (
+    <img
+      src={src}
+      alt={name}
+      className={`rounded-full object-cover ring-1 ring-line ${sizes[size]} ${className}`}
+    />
+  ) : (
     <div
       className={`flex items-center justify-center rounded-full font-semibold text-white ring-1 ring-line select-none ${sizes[size]} ${className}`}
       style={{
-        background: `linear-gradient(135deg, hsl(${hue} 55% 40%), hsl(${(hue + 40) % 360} 60% 30%))`,
+        background: `linear-gradient(135deg, hsl(${hueFor(name || "?")} 55% 40%), hsl(${(hueFor(name || "?") + 40) % 360} 60% 30%))`,
       }}
       aria-label={name}
     >
       {initials}
+    </div>
+  );
+
+  if (!frameColor) return body;
+
+  return (
+    <div
+      className="relative shrink-0 rounded-full ring-[3px]"
+      style={{ "--tw-ring-color": frameColor, boxShadow: `0 0 10px ${frameColor}66` } as CSSProperties}
+    >
+      {body}
     </div>
   );
 }

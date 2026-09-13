@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useState } from "react";
 import { firestore } from "@/lib/firestore";
 import { Avatar } from "@/components/ui";
 import type { ShopItem } from "@rivalr/shared";
@@ -91,15 +91,8 @@ export function UserCard({ name, avatarUrl, size = "md", slots, userId, showTaun
 
   return (
     <div className="flex min-w-0 items-center gap-3">
-      <div
-        className={`relative shrink-0 rounded-full ${frameColor ? "ring-[3px]" : ""}`}
-        style={
-          frameColor
-            ? ({ "--tw-ring-color": frameColor, boxShadow: `0 0 10px ${frameColor}66` } as CSSProperties)
-            : undefined
-        }
-      >
-        <Avatar src={avatarUrl} name={name} size={size} />
+      <div className="relative shrink-0 rounded-full">
+        <Avatar src={avatarUrl} name={name} size={size} frameColor={frameColor} />
         {showTauntOnAvatar && taunt ? (
           <span className="absolute -bottom-1 -right-1 text-base leading-none drop-shadow">{taunt}</span>
         ) : null}
