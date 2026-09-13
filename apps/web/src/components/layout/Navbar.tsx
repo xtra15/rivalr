@@ -1,6 +1,10 @@
 import { NavLink, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { Avatar, CoinBalance, Icon, LogoMark, type IconName } from "@/components/ui";
+import { resolveEquipped, type ItemWithCustomColor } from "@/components/UserCard";
+import { firestore } from "@/lib/firestore";
+import type { ShopItem } from "@rivalr/shared";
 
 const navItems: { to: string; label: string; icon: IconName }[] = [
   { to: "/dashboard", label: "Dashboard", icon: "grid" },
@@ -19,6 +23,27 @@ function isActivePath(locationPathname: string, to: string) {
 export function Sidebar() {
   const { user, isAdmin, signOut } = useAuth();
   const location = useLocation();
+  const [frameColor, setFrameColor] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    if (!user) return;
+    let alive = true;
+    (async () => {
+      try {
+        const [inv, items] = await Promise.all([
+          firestore.userInventory.getForUsers([user.id]),
+          firestore.shopItems.getAll() as Promise<ShopItem[]>,
+        ]);
+        if (!alive) return;
+        const slots = resolveEquipped(inv as unknown as ItemWithCustomColor[], items);
+        setFrameColor(slots.frameColor);
+      } catch {
+        if (alive) setFrameColor(undefined);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [user]);
 
   if (!user) return null;
 
@@ -58,7 +83,7 @@ export function Sidebar() {
 
       <div className="mt-auto border-t border-line p-3">
         <div className="flex items-center gap-3 rounded-md px-2 py-2">
-          <Avatar src={user.avatar_url} name={user.name} size="sm" />
+          <Avatar src={user.avatar_url} name={user.name} size="sm" frameColor={frameColor} />
           <div className="min-w-0">
             <p className="truncate text-sm font-medium leading-tight">{user.name}</p>
             <CoinBalance coins={user.coins} className="text-xs" />
