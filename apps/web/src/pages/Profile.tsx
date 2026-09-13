@@ -140,7 +140,12 @@ export default function Profile() {
     <div className="mx-auto max-w-4xl animate-fade-in">
       <div className="grid gap-8 lg:grid-cols-3">
         <div className="lg:border-r lg:border-line lg:pr-8">
-          <Avatar src={user.avatar_url} name={user.name} size="lg" />
+          <Avatar
+            src={user.avatar_url}
+            name={user.name}
+            size="lg"
+            frameColor={equippedSlots.frameColor}
+          />
           <AvatarUploadManager />
           <h1 className="mt-4 font-display text-2xl uppercase tracking-wide">{user.name}</h1>
           <p className="mt-1 text-sm text-ink-muted">{user.email}</p>
@@ -210,6 +215,7 @@ export default function Profile() {
                     slots={equippedSlots}
                     userName={user?.name ?? ""}
                     avatarUrl={user?.avatar_url ?? null}
+                    userId={user?.id ?? ""}
                     onEquip={equipItem}
                     onChanged={() => loadData()}
                   />
@@ -317,6 +323,7 @@ function AchievementsTab({
 
 const CATEGORY_LABELS: Record<string, string> = {
   avatar_frame: "Avatar frame",
+  custom_frame_color: "Custom Frame Color",
   sound_effect: "Sound effect",
   quiz_theme: "Quiz theme",
   taunt: "Taunt",
@@ -324,7 +331,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   name_glow: "Name glow",
 };
 
-const ALL_CATEGORIES = ["avatar_frame", "name_glow", "title", "taunt", "quiz_theme", "sound_effect"] as const;
+const ALL_CATEGORIES = ["avatar_frame", "custom_frame_color", "name_glow", "title", "taunt", "quiz_theme", "sound_effect"] as const;
 
 function EquippedTab({
   equipped,
@@ -333,6 +340,7 @@ function EquippedTab({
   slots,
   userName,
   avatarUrl,
+  userId,
   onEquip,
   onChanged,
 }: {
@@ -342,6 +350,7 @@ function EquippedTab({
   slots: EquippedSlots;
   userName: string;
   avatarUrl: string | null;
+  userId: string;
   onEquip: (item: ShopItem) => void;
   onChanged?: () => void;
 }) {
@@ -351,7 +360,7 @@ function EquippedTab({
       <CustomTauntManager onChanged={onChanged} />
       {ALL_CATEGORIES.map((cat) => {
         const icon: IconName =
-          cat === "taunt" ? "flame" : cat === "quiz_theme" ? "target" : cat === "sound_effect" ? "play" : cat === "title" ? "star" : cat === "name_glow" ? "crown" : "user";
+          cat === "taunt" ? "flame" : cat === "quiz_theme" ? "target" : cat === "sound_effect" ? "play" : cat === "title" ? "star" : cat === "name_glow" ? "crown" : cat === "custom_frame_color" ? "sparkles" : "user";
         const owned = items.filter((i) => i.category === cat && ownedIds.includes(i.id));
         const current = equipped.find((e) => e.item.category === cat)?.item.id;
         return (
@@ -394,6 +403,12 @@ function EquippedTab({
                             style={{ backgroundColor: item.preview_data }}
                           />
                         ) : null}
+                        {cat === "custom_frame_color" && item.preview_data ? (
+                          <span
+                            className="h-3 w-3 rounded-full"
+                            style={{ backgroundColor: item.preview_data ?? "#C9F73A" }}
+                          />
+                        ) : null}
                         <span>{cat === "title" || cat === "taunt" ? item.preview_data || item.name : item.name}</span>
                       </button>
                     );
@@ -402,6 +417,22 @@ function EquippedTab({
               ) : (
                 <p className="text-xs text-ink-faint">Not owned yet</p>
               )}
+              {cat === "custom_frame_color" && owned.length > 0 ? (
+                <div className="mt-3 flex items-center gap-2">
+                  <input
+                    type="color"
+                    defaultValue={slots.frameColor ?? "#C9F73A"}
+                    onChange={(e) => {
+                      firestore.userInventory
+                        .setCustomColor(userId, e.currentTarget.value)
+                        .then(() => onChanged?.());
+                    }}
+                    className="h-8 w-10 cursor-pointer rounded-md border border-line bg-panel p-0.5"
+                    aria-label="Custom frame color"
+                  />
+                  <span className="text-xs text-ink-faint">Pick any color for your frame</span>
+                </div>
+              ) : null}
             </div>
             <Link
               to="/shop"
