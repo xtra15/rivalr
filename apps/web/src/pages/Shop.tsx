@@ -8,6 +8,7 @@ import type { ShopItem } from "@rivalr/shared";
 
 const CATEGORY_LABELS: Record<string, string> = {
   avatar_frame: "Avatar Frames",
+  custom_frame_color: "Custom Frame Color",
   sound_effect: "Sound Effects",
   quiz_theme: "Quiz Themes",
   taunt: "Taunt Stickers",
@@ -15,13 +16,14 @@ const CATEGORY_LABELS: Record<string, string> = {
   name_glow: "Name Glow",
 };
 
-const CATEGORY_ICONS: Record<string, "user" | "play" | "target" | "flame" | "star" | "crown"> = {
+const CATEGORY_ICONS: Record<string, "user" | "play" | "target" | "flame" | "star" | "crown" | "sparkles"> = {
   avatar_frame: "user",
   sound_effect: "play",
   quiz_theme: "target",
   taunt: "flame",
   title: "star",
   name_glow: "crown",
+  custom_frame_color: "sparkles",
 };
 
 export default function Shop() {
@@ -215,6 +217,11 @@ function Preview({ item }: { item: ShopItem }) {
             <Icon name="user" size={16} />
           </div>
         </div>
+      ) : item.category === "custom_frame_color" ? (
+        <div
+          className="h-8 w-16 rounded-md border border-line"
+          style={{ backgroundColor: item.preview_data ?? "#C9F73A" }}
+        />
       ) : item.category === "sound_effect" ? (
         <div className="flex h-10 w-10 items-center justify-center rounded-full border border-line-strong bg-panel text-volt">
           <Icon name="play" size={16} fill />
