@@ -325,6 +325,10 @@ async getByIds(ids: string[]) {
       const ref = doc(db, "user_inventory", `${userId}_${itemId}`);
       await updateDoc(ref, { is_equipped: false });
     },
+    async setCustomColor(userId: string, hex: string) {
+      const ref = doc(db, "user_inventory", `${userId}_frame_custom`);
+      await updateDoc(ref, { custom_color: hex });
+    },
     async getForUsers(userIds: string[]) {
       const results: (Record<string, unknown> & { id: string })[] = [];
       for (const id of userIds) {

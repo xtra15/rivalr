@@ -68,6 +68,7 @@ const shopItems = [
   { id: "frame_galaxy", name: "Galaxy", description: "Out of this world", category: "avatar_frame", coin_cost: 300, preview_data: "#8B5CF6" },
   { id: "frame_spm_champion", name: "SPM Champion", description: "You made it", category: "avatar_frame", coin_cost: 1500, preview_data: "#FFFFFF" },
   { id: "frame_cherry", name: "Cherry", description: "Small and sweet", category: "avatar_frame", coin_cost: 250, preview_data: "#E11D48" },
+  { id: "frame_custom", name: "Custom Frame Color", description: "Your color, your frame", category: "custom_frame_color", coin_cost: 500, preview_data: "#C9F73A" },
   // Sound effects
   { id: "sfx_whoosh", name: "Whoosh", description: "A satisfying whoosh on correct answers", category: "sound_effect", coin_cost: 300, preview_data: "whoosh.mp3" },
   { id: "sfx_ding", name: "Ding", description: "A clean ding when you nail it", category: "sound_effect", coin_cost: 300, preview_data: "ding.mp3" },

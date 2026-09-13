@@ -74,7 +74,7 @@ export interface ShopItem {
   id: string;
   name: string;
   description: string;
-  category: "avatar_frame" | "sound_effect" | "quiz_theme" | "taunt" | "title" | "name_glow";
+  category: "avatar_frame" | "sound_effect" | "quiz_theme" | "taunt" | "title" | "name_glow" | "custom_frame_color";
   coin_cost: number;
   preview_data: string | null;
 }
