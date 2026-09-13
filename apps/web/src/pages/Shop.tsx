@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { useAuth } from "@/lib/auth";
 import { firestore } from "@/lib/firestore";
 import { Card, Button, Tabs, Icon, CoinBalance, useToast } from "@/components/ui";
@@ -207,7 +207,10 @@ function Preview({ item }: { item: ShopItem }) {
   return (
     <div className="flex h-20 items-center justify-center rounded-t-lg border-b border-line bg-overpanel/60">
       {item.category === "avatar_frame" ? (
-        <div className="rounded-full p-1 ring-2 ring-volt">
+        <div
+          className="rounded-full p-1 ring-2"
+          style={isColor ? ({ "--tw-ring-color": item.preview_data } as CSSProperties) : undefined}
+        >
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-panel text-xs font-semibold text-ink-muted">
             <Icon name="user" size={16} />
           </div>

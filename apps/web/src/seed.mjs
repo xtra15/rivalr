@@ -62,12 +62,12 @@ const achievementsById = {
 
 const shopItems = [
   // Avatar frames
-  { id: "frame_default", name: "Default", description: "The classic look", category: "avatar_frame", coin_cost: 0, preview_data: "◯" },
-  { id: "frame_gold_crown", name: "Gold Crown", description: "Only for the top of the leaderboard", category: "avatar_frame", coin_cost: 200, preview_data: "👑" },
-  { id: "frame_fire_ring", name: "Fire Ring", description: "For those on a hot streak", category: "avatar_frame", coin_cost: 150, preview_data: "🔥" },
-  { id: "frame_galaxy", name: "Galaxy", description: "Out of this world", category: "avatar_frame", coin_cost: 300, preview_data: "🌌" },
-  { id: "frame_spm_champion", name: "SPM Champion", description: "You made it", category: "avatar_frame", coin_cost: 1500, preview_data: "🏆" },
-  { id: "frame_cherry", name: "Cherry", description: "Small and sweet", category: "avatar_frame", coin_cost: 250, preview_data: "🍒" },
+  { id: "frame_default", name: "Default", description: "The classic look", category: "avatar_frame", coin_cost: 0, preview_data: null },
+  { id: "frame_gold_crown", name: "Gold Crown", description: "Only for the top of the leaderboard", category: "avatar_frame", coin_cost: 200, preview_data: "#FFD700" },
+  { id: "frame_fire_ring", name: "Fire Ring", description: "For those on a hot streak", category: "avatar_frame", coin_cost: 150, preview_data: "#FF5722" },
+  { id: "frame_galaxy", name: "Galaxy", description: "Out of this world", category: "avatar_frame", coin_cost: 300, preview_data: "#8B5CF6" },
+  { id: "frame_spm_champion", name: "SPM Champion", description: "You made it", category: "avatar_frame", coin_cost: 1500, preview_data: "#FFFFFF" },
+  { id: "frame_cherry", name: "Cherry", description: "Small and sweet", category: "avatar_frame", coin_cost: 250, preview_data: "#E11D48" },
   // Sound effects
   { id: "sfx_whoosh", name: "Whoosh", description: "A satisfying whoosh on correct answers", category: "sound_effect", coin_cost: 300, preview_data: "whoosh.mp3" },
   { id: "sfx_ding", name: "Ding", description: "A clean ding when you nail it", category: "sound_effect", coin_cost: 300, preview_data: "ding.mp3" },

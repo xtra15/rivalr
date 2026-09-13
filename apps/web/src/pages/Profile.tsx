@@ -384,8 +384,11 @@ function EquippedTab({
                             style={{ backgroundColor: item.preview_data }}
                           />
                         ) : null}
-                        {cat === "avatar_frame" && item.preview_data && !item.preview_data.startsWith("#") ? (
-                          <span className="text-sm leading-none">{item.preview_data}</span>
+                        {cat === "avatar_frame" && item.preview_data?.startsWith("#") ? (
+                          <span
+                            className="h-3 w-3 rounded-full"
+                            style={{ backgroundColor: item.preview_data }}
+                          />
                         ) : null}
                         <span>{cat === "title" || cat === "taunt" ? item.preview_data || item.name : item.name}</span>
                       </button>
